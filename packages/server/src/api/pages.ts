@@ -1,0 +1,180 @@
+import { Hono } from 'hono'
+import { validator } from 'hono/validator'
+import type { D1Database } from '@cloudflare/workers-types/experimental'
+import type { HonoTypeUserInformation } from '~/constants/binding'
+import result from '~/utils/result'
+import { Page } from '~/sql/types'
+
+const app = new Hono<HonoTypeUserInformation>()
+
+interface InsertPageOptions {
+  title: string
+  pageDesc: string
+  pageUrl: string
+  contentUrl: string
+  folderId: number
+}
+
+async function insertPage(DB: D1Database, pageOptions: InsertPageOptions) {
+  const { title, pageDesc, pageUrl, contentUrl, folderId } = pageOptions
+  const insertResult = await DB
+    .prepare(
+      'INSERT INTO pages (title, pageDesc, pageUrl, contentUrl, folderId) VALUES (?, ?, ?, ?, ?)',
+    )
+    .bind(title, pageDesc, pageUrl, contentUrl, folderId)
+    .run()
+  return insertResult.error
+}
+
+async function getPage(DB: D1Database, id: number) {
+  const sql = `
+    SELECT
+      *
+    FROM pages
+    WHERE id = ?
+    AND isDeleted = 0
+  `
+  return await DB.prepare(sql).bind(id).first<Page>()
+}
+
+app.post(
+  '/upload_new_page',
+  validator('form', (value) => {
+    if (!value.title || typeof value.title !== 'string') {
+      return 'Title is required'
+    }
+    if (typeof value.pageDesc !== 'string') {
+      return 'Description is required'
+    }
+    if (!value.pageUrl || typeof value.pageUrl !== 'string') {
+      return 'URL is required'
+    }
+    if (!value.pageFile) {
+      return 'File is required'
+    }
+    if (!value.folderId || Number.isNaN(Number(value.folderId))) {
+      return 'Folder id should be a number'
+    }
+
+    return {
+      title: value.title,
+      pageDesc: value.pageDesc,
+      pageUrl: value.pageUrl,
+      pageFile: value.pageFile,
+      folderId: Number(value.folderId),
+    }
+  }),
+  async (c) => {
+    const formData = c.req.valid('form')
+    if (typeof formData === 'string') {
+      return c.json({ status: 'error', message: formData })
+    }
+    const { title, pageDesc, pageUrl, pageFile, folderId } = formData
+    const contentUrl = crypto.randomUUID()
+
+    let fileArraybuffer: ArrayBuffer
+    if (typeof pageFile === 'string') {
+      const encoder = new TextEncoder()
+      fileArraybuffer = encoder.encode(pageFile).buffer
+    }
+    else {
+      fileArraybuffer = await pageFile.arrayBuffer()
+    }
+    const uploadFileResult = await c.env.BUCKET.put(contentUrl, fileArraybuffer)
+    if (uploadFileResult === null) {
+      return c.json({ status: 'error', message: 'Failed to upload file' })
+    }
+    const insertPageResult = await insertPage(c.env.DB, {
+      title,
+      pageDesc,
+      pageUrl,
+      contentUrl,
+      folderId,
+    })
+    if (!insertPageResult) {
+      return c.json(result.success(null))
+    }
+    return c.json(result.error(500, 'Failed to insert page'))
+  },
+)
+
+app.get(
+  '/query',
+  async (c) => {
+    const folderId = c.req.query('folderId')
+    if (!folderId || Number.isNaN(Number(folderId))) {
+      return c.json(result.error(400, 'Folder ID is required'))
+    }
+
+    const sql = `SELECT 
+        id, 
+        pageDesc AS pageDesc,
+        title,
+        pageUrl AS pageUrl,
+        folderId AS folderId
+      FROM pages
+      WHERE folderId = ?
+      AND isDeleted = 0
+      `
+    const bindParams: Array<string | number> = [folderId]
+
+    const { results } = await c.env.DB
+      .prepare(sql)
+      .bind(...bindParams)
+      .all()
+    return c.json(result.success(results))
+  },
+)
+
+app.get(
+  '/get_page',
+  validator('query', (value, c) => {
+    if (!value.id || Number.isNaN(Number(value.id))) {
+      return c.json(result.error(400, 'ID is required'))
+    }
+    return {
+      id: Number(value.id),
+    }
+  }),
+  async (c) => {
+    const { id } = c.req.valid('query')
+
+    const page = await getPage(c.env.DB, id)
+    if (page) {
+      return c.json(result.success(page))
+    }
+
+    return c.json(result.success(null))
+  },
+)
+
+app.delete(
+  '/delete_page',
+  validator('query', (value) => {
+    if (!value.id || Number.isNaN(Number(value.id))) {
+      return 'ID is required'
+    }
+    return {
+      id: Number(value.id),
+    }
+  }),
+  async (c) => {
+    const query = c.req.valid('query')
+    if (typeof query === 'string') {
+      return c.json({ status: 'error', message: query })
+    }
+
+    const { id } = query
+    const deleteResult = await c.env.DB.prepare(
+      'DELETE FROM pages WHERE id = ?',
+    )
+      .bind(id)
+      .run()
+    if (!deleteResult.error) {
+      return c.json(result.success(null))
+    }
+    return c.json(result.error(500, 'Failed to delete page'))
+  },
+)
+
+export default app

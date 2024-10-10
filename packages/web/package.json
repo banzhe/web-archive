@@ -1,0 +1,14 @@
+{
+  "name": "@web-archive/web",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@generouted/react-router": "^1.19.6",
+    "react-router-dom": "^6.24.0"
+  },
+  "devDependencies": {
+    "@web-archive/shared": "workspace:*"
+  }
+}
