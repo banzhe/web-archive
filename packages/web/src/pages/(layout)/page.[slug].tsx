@@ -30,7 +30,7 @@ function ArchivePage() {
     }
   })
 
-  const { data: pageDetail, loading: pageDetailLoading } = useRequest(
+  const { data: pageDetail } = useRequest(
     fetcher<Page>('/pages/get_page', {
       query: {
         id: slug ?? '',
@@ -68,6 +68,24 @@ function ArchivePage() {
     }
   }, [pageHtml])
 
+  const { runAsync: runDeletePage } = useRequest(
+    fetcher('/pages/delete_page', {
+      method: 'DELETE',
+      query: {
+        id: slug,
+      },
+    }),
+    {
+      manual: true,
+    },
+  )
+  const handleDeletePage = async () => {
+    if (!window.confirm('Are you sure you want to delete this page?'))
+      return
+    await runDeletePage()
+    goBack()
+  }
+
   return (
     <>
       <nav className="p-2 flex justify-between items-center">
@@ -78,7 +96,11 @@ function ArchivePage() {
           <Button variant="ghost" size="sm" className="mr-2">
             <Maximize className="w-5 h-5" />
           </Button>
-          <Button variant="destructive" size="sm">
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleDeletePage}
+          >
             <Trash className="w-5 h-5" />
           </Button>
         </div>
