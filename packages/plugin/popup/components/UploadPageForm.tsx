@@ -19,7 +19,17 @@ async function scrapePageData() {
   const tabs = await Browser.tabs.query({ active: true, currentWindow: true })
   const tab = tabs[0]
 
-  const pageData = await sendMessage('get-current-page-data', {}, `content-script@${tab.id}`)
+  if (!tab?.id) {
+    return {
+      title: '',
+      pageDesc: '',
+      content: '',
+      href: '',
+      folderId: '0',
+    }
+  }
+
+  const pageData = await sendMessage('get-current-page-data', { tabId: tab.id }, 'background')
   return {
     title: pageData.title,
     pageDesc: pageData.pageDesc,

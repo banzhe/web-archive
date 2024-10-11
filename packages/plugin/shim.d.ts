@@ -10,7 +10,7 @@ declare module 'webext-bridge' {
       folderId: string
       pageDesc: string
     }, { success: boolean }>
-    'get-current-page-data': ProtocolWithReturn<{}, {
+    'get-current-page-data': ProtocolWithReturn<{ tabId: number }, {
       content: string
       title: string
       href: string
@@ -24,5 +24,6 @@ declare module 'webext-bridge' {
     'get-all-folders': ProtocolWithReturn<{}, { folders: Array<{ id: number, name: string }> }>
     'scrape-page-progress': ProtocolWithReturn<{ stage: LoadStage }, {}>
     'scrape-page-progress-to-popup': ProtocolWithReturn<{ stage: LoadStage }, {}>
+    'scrape-page-data': ProtocolWithReturn<{}, { content: string, title: string, href: string, pageDesc: string }>
   }
 }
