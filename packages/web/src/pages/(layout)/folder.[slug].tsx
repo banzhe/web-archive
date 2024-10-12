@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@web-
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@web-archive/shared/components/tooltip'
 import { Page } from '@web-archive/shared/types'
 import { useRequest } from 'ahooks'
+import React from 'react'
 import { useNavigate, useParams } from '~/router'
 import fetcher from '~/utils/fetcher'
 import emitter from '~/utils/emitter'
@@ -47,6 +48,11 @@ function FolderPage() {
     navigate('/page/:slug', { params: { slug: String(page.id) } })
   }
 
+  const handleClickPageUrl = (e: React.MouseEvent, page: Page) => {
+    e.stopPropagation()
+    window.open(page.pageUrl, '_blank')
+  }
+
   return (
     <div className="flex flex-col h-screen">
       <div className="p-2 flex justify-end items-center">
@@ -69,7 +75,12 @@ function FolderPage() {
             <Card key={page.id} onClick={() => handleClickPageCard(page)} className="cursor-pointer hover:shadow-lg transition-shadow">
               <CardHeader>
                 <CardTitle>{page.title}</CardTitle>
-                <CardDescription>{page.pageUrl}</CardDescription>
+                <CardDescription
+                  onClick={e => handleClickPageUrl(e, page)}
+                  className="cursor-pointer hover:underline"
+                >
+                  {page.pageUrl}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 dark:text-gray-400">{page.pageDesc}</p>
