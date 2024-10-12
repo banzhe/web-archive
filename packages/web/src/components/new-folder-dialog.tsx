@@ -21,6 +21,7 @@ function NewFolderDialog({ afterSubmit, open, setOpen }: NewFolderProps) {
       manual: true,
       onSuccess: () => {
         setOpen(false)
+        setName('')
         afterSubmit()
       },
       onError: (error) => {

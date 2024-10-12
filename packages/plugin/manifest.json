@@ -52,9 +52,7 @@
       "run_at": "document_start",
       "js": [
         "lib/browser-polyfill.min.js",
-        "lib/single-file-bootstrap.js",
-        "lib/single-file-extension-core.js",
-        "lib/single-file.js"
+        "lib/single-file-bootstrap.js"
       ],
       "all_frames": false
     },
@@ -74,7 +72,9 @@
   },
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "tabs",
+    "scripting"
   ],
   "web_accessible_resources": [
     {

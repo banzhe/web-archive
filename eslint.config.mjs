@@ -6,6 +6,7 @@ export default antfu({
     '**/lib',
     '**/extension',
     'packages/shared/components/*.tsx',
+    'packages/web/src/router.ts',
   ],
 }, {
   rules: {

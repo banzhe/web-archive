@@ -31,6 +31,11 @@ function SideBar() {
 
   const [newFolderDialogOpen, setNewFolderDialogOpen] = useState(false)
 
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    navigate('/login')
+  }
+
   return (
     <div className="w-64 border-r h-screen">
       <NewFolderDialog afterSubmit={refresh} open={newFolderDialogOpen} setOpen={setNewFolderDialogOpen} />
@@ -57,7 +62,11 @@ function SideBar() {
             <Trash className="w-5 h-5 mr-2" />
             Deleted
           </Button>
-          <Button variant="ghost" className="w-full text-sm justify-start">
+          <Button
+            variant="ghost"
+            className="w-full text-sm justify-start"
+            onClick={handleLogout}
+          >
             <LogOut className="w-5 h-5 mr-2" />
             Logout
           </Button>

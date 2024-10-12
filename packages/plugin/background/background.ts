@@ -1,7 +1,7 @@
 import Browser from 'webextension-polyfill'
 import '../lib/browser-polyfill.min.js'
 import '../lib/single-file-background.js'
-import { onMessage } from 'webext-bridge/background'
+import { onMessage, sendMessage } from 'webext-bridge/background'
 
 async function appendAuthHeader(options?: RequestInit) {
   const { token } = await Browser.storage.local.get('token') ?? {}
@@ -104,4 +104,13 @@ onMessage('get-all-folders', async () => {
   return {
     folders,
   }
+})
+
+onMessage('get-current-page-data', async ({ data: { tabId } }) => {
+  await Browser.scripting.executeScript({
+    target: { tabId },
+    files: ['/lib/single-file.js', '/lib/single-file-extension-core.js'],
+  })
+  const pageData = await sendMessage('scrape-page-data', {}, `content-script@${tabId}`)
+  return pageData
 })
