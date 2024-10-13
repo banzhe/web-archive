@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@web-archive/shared/components/tooltip'
 import { Page } from '@web-archive/shared/types'
 import { useDrag, useRequest } from 'ahooks'
-import React, { useRef } from 'react'
+import React, { MouseEvent, useRef } from 'react'
+import toast from 'react-hot-toast'
 import { useNavigate, useParams } from '~/router'
 import fetcher from '~/utils/fetcher'
 import emitter from '~/utils/emitter'
@@ -51,6 +52,25 @@ function FolderPage() {
     setPages(pages.filter(page => page.id !== pageId))
   })
 
+  const handlePageDelete = async (page: Page) => {
+    if (!pages)
+      return
+
+    try {
+      await fetcher('/pages/delete_page', {
+        method: 'DELETE',
+        query: {
+          id: page.id.toString(),
+        },
+      })()
+      toast.success('Page deleted successfully')
+      setPages(pages.filter(p => p.id !== page.id))
+    }
+    catch (e) {
+      toast.error('Failed to delete page')
+    }
+  }
+
   return (
     <div className="flex flex-col h-screen">
       <div className="p-2 flex justify-end items-center">
@@ -77,7 +97,11 @@ function FolderPage() {
               </div>
               )
             : (
-              <PageCardContainer pages={pages} />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {pages && pages.map(page => (
+                  <PageCard key={page.id} page={page} onPageDelete={handlePageDelete} />
+                ))}
+              </div>
               )
         }
       </div>
@@ -85,17 +109,7 @@ function FolderPage() {
   )
 }
 
-function PageCardContainer({ pages }: { pages: Page[] | undefined }) {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {pages && pages.map(page => (
-        <PageCard key={page.id} page={page} />
-      ))}
-    </div>
-  )
-}
-
-function PageCard({ page }: { page: Page }) {
+function PageCard({ page, onPageDelete }: { page: Page, onPageDelete?: (page: Page) => void }) {
   const navigate = useNavigate()
 
   const handleClickPageCard = (page: Page) => {
@@ -113,6 +127,13 @@ function PageCard({ page }: { page: Page }) {
       image: dragIcon,
     },
   })
+
+  const handleDeletePage = (e: MouseEvent) => {
+    e.stopPropagation()
+    if (window.confirm('Are you sure you want to delete this page?')) {
+      onPageDelete?.(page)
+    }
+  }
 
   return (
     <Card
@@ -132,10 +153,33 @@ function PageCard({ page }: { page: Page }) {
       <CardContent className="flex-1">
         <p className="h-auto text-sm text-gray-600 dark:text-gray-400">{page.pageDesc}</p>
       </CardContent>
-      <CardFooter className="flex">
-        <div ref={cardDragTarget}>
-          <Move />
-        </div>
+      <CardFooter className="flex space-x-2">
+
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="sm" ref={cardDragTarget}>
+                <Move className="w-5 h-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Drag to move this page
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="destructive" size="sm" onClick={handleDeletePage}>
+                <Trash className="w-5 h-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Delete this page
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </CardFooter>
     </Card>
   )
