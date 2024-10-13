@@ -16,6 +16,35 @@ interface InsertPageOptions {
   folderId: number
 }
 
+export async function selectPagesByFolderId(DB: D1Database, options: { folderId: number, pageNumber?: number, pageSize?: number }) {
+  const { folderId, pageNumber, pageSize } = options
+  let sql = `
+    SELECT
+      id,
+      title,
+      contentUrl,
+      pageUrl,
+      folderId,
+      pageDesc,
+      createdAt
+      updatedAt
+    FROM pages
+    WHERE folderId == ? AND isDeleted == 0
+    ORDER BY createdAt DESC
+  `
+  const bindParams = [folderId]
+  if (isNotNil(pageNumber) && isNotNil(pageSize)) {
+    sql += `LIMIT ? OFFSET ?`
+    bindParams.push(pageSize)
+    bindParams.push((pageNumber - 1) * pageSize)
+  }
+  const sqlResult = await DB.prepare(sql).bind(...bindParams).all<Page>()
+  if (sqlResult.error) {
+    throw sqlResult.error
+  }
+  return sqlResult.results
+}
+
 async function insertPage(DB: D1Database, pageOptions: InsertPageOptions) {
   const { title, pageDesc, pageUrl, contentUrl, folderId } = pageOptions
   const insertResult = await DB
@@ -101,29 +130,33 @@ app.post(
 
 app.get(
   '/query',
-  async (c) => {
-    const folderId = c.req.query('folderId')
-    if (!folderId || Number.isNaN(Number(folderId))) {
+  validator('query', (value, c) => {
+    if (!value.folderId || Number.isNaN(Number(value.folderId))) {
       return c.json(result.error(400, 'Folder ID is required'))
     }
 
-    const sql = `SELECT 
-        id, 
-        pageDesc AS pageDesc,
-        title,
-        pageUrl AS pageUrl,
-        folderId AS folderId
-      FROM pages
-      WHERE folderId = ?
-      AND isDeleted = 0
-      `
-    const bindParams: Array<string | number> = [folderId]
+    if (value.pageNumber && !isNumberString(value.pageNumber)) {
+      return c.json(result.error(400, 'Page number should be a number'))
+    }
 
-    const { results } = await c.env.DB
-      .prepare(sql)
-      .bind(...bindParams)
-      .all()
-    return c.json(result.success(results))
+    if (value.pageSize && !isNumberString(value.pageSize)) {
+      return c.json(result.error(400, 'Page size should be a number'))
+    }
+
+    return {
+      folderId: Number(value.folderId),
+      pageNumber: isNotNil(value.pageNumber) ? Number(value.pageNumber) : undefined,
+      pageSize: isNotNil(value.pageSize) ? Number(value.pageSize) : undefined,
+    }
+  }),
+  async (c) => {
+    const { folderId, pageNumber, pageSize } = c.req.valid('query')
+
+    const pages = await selectPagesByFolderId(
+      c.env.DB,
+      { folderId: Number(folderId), pageNumber, pageSize },
+    )
+    return c.json(result.success(pages))
   },
 )
 

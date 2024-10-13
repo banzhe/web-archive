@@ -1,10 +1,11 @@
 import { Button } from '@web-archive/shared/components/button'
 import { ExternalLink, Move, Trash } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@web-archive/shared/components/card'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@web-archive/shared/components/card'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@web-archive/shared/components/tooltip'
+import { ScrollArea } from '@web-archive/shared/components/scroll-area'
 import { Page } from '@web-archive/shared/types'
-import { useDrag, useRequest } from 'ahooks'
-import React, { MouseEvent, useRef } from 'react'
+import { useDrag, useInfiniteScroll, useRequest } from 'ahooks'
+import React, { MouseEvent, useEffect, useRef } from 'react'
 import toast from 'react-hot-toast'
 import { useNavigate, useParams } from '~/router'
 import fetcher from '~/utils/fetcher'
@@ -13,13 +14,48 @@ import { dragIcon } from '~/utils/drag'
 
 function FolderPage() {
   const { slug } = useParams('/folder/:slug')
-  const { data: pages, loading: pagesLoading, mutate: setPages } = useRequest(fetcher<Page[]>(`/pages/query`, {
-    query: {
-      folderId: slug,
+
+  const scrollRef = useRef(null)
+  const PAGE_SIZE = 14
+  const pageNum = useRef(1)
+  const { data: pagesData, loading: pagesLoading, mutate: setPageData, loadingMore, reload } = useInfiniteScroll(
+    async (d) => {
+      if (loadingMore) {
+        return {
+          list: [],
+        }
+      }
+      const list = await fetcher<Page[]>(`/pages/query`, {
+        query: {
+          folderId: slug,
+          pageNumber: pageNum.current.toString(),
+          pageSize: PAGE_SIZE.toString(),
+        },
+      })()
+      pageNum.current += 1
+      return {
+        list: list ?? [],
+      }
     },
-  }), {
-    refreshDeps: [slug],
-  })
+    {
+      target: () => {
+        if (scrollRef.current)
+          // @ts-ignore todo fix type error
+          return scrollRef.current.viewport
+        return null
+      },
+      isNoMore: (d) => {
+        if (!d)
+          return false
+        return d.list.length % PAGE_SIZE !== 0
+      },
+    },
+  )
+
+  useEffect(() => {
+    pageNum.current = 1
+    reload()
+  }, [slug])
 
   const navigate = useNavigate()
   const { run: deleteFolder } = useRequest(
@@ -47,13 +83,13 @@ function FolderPage() {
   }
 
   emitter.on('movePage', ({ pageId }) => {
-    if (!pages)
+    if (!pagesData)
       return
-    setPages(pages.filter(page => page.id !== pageId))
+    setPageData({ list: pagesData.list.filter(page => page.id !== pageId) })
   })
 
   const handlePageDelete = async (page: Page) => {
-    if (!pages)
+    if (!pagesData)
       return
 
     try {
@@ -64,7 +100,7 @@ function FolderPage() {
         },
       })()
       toast.success('Page deleted successfully')
-      setPages(pages.filter(p => p.id !== page.id))
+      setPageData({ list: pagesData.list.filter(p => p.id !== page.id) })
     }
     catch (e) {
       toast.error('Failed to delete page')
@@ -87,9 +123,9 @@ function FolderPage() {
           </Tooltip>
         </TooltipProvider>
       </div>
-      <div className="flex-1 p-4 overflow-auto">
+      <ScrollArea ref={scrollRef} className="flex-1 p-4 overflow-auto">
         {
-          pagesLoading || (!pages)
+          pagesLoading || (!pagesData)
             ? (
               <div className="w-full h-full flex flex-col items-center justify-center">
                 <div className="m-b-xl h-8 w-8 animate-spin border-4 border-t-transparent rounded-full border-primary"></div>
@@ -97,14 +133,25 @@ function FolderPage() {
               </div>
               )
             : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <PageList pages={pages.filter((_, index) => index % 3 === 0)} onPageDelete={handlePageDelete} />
-                <PageList pages={pages.filter((_, index) => index % 3 === 1)} onPageDelete={handlePageDelete} />
-                <PageList pages={pages.filter((_, index) => index % 3 === 2)} onPageDelete={handlePageDelete} />
+              <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <PageList pages={pagesData.list.filter((_, index) => index % 3 === 0)} onPageDelete={handlePageDelete} />
+                  <PageList pages={pagesData.list.filter((_, index) => index % 3 === 1)} onPageDelete={handlePageDelete} />
+                  <PageList pages={pagesData.list.filter((_, index) => index % 3 === 2)} onPageDelete={handlePageDelete} />
+                </div>
+                {
+                  loadingMore && (
+                    <div className="w-full h-16 flex flex-col items-center justify-center mt-2">
+                      <div className="m-b-xl h-8 w-8 animate-spin border-4 border-t-transparent rounded-full border-primary"></div>
+                      <div>Loading more...</div>
+                    </div>
+                  )
+                }
               </div>
               )
         }
-      </div>
+
+      </ScrollArea>
     </div>
   )
 }

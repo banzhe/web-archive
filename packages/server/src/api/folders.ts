@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { validator } from 'hono/validator'
 import type { D1Database } from '@cloudflare/workers-types/experimental'
+import { selectPagesByFolderId } from './pages'
 import type { HonoTypeUserInformation } from '~/constants/binding'
 import result from '~/utils/result'
 
@@ -46,25 +47,6 @@ async function selectAllPages(DB: D1Database) {
     WHERE isDeleted == 0
   `
   const sqlResult = await DB.prepare(sql).all<Page>()
-  if (sqlResult.error) {
-    throw sqlResult.error
-  }
-  return sqlResult.results
-}
-
-async function selectPagesByFolderId(DB: D1Database, folderId: number) {
-  const sql = `
-    SELECT
-      id,
-      title,
-      contentUrl AS contentUrl,
-      pageUrl AS pageUrl,
-      folderId AS folderId,
-      pageDesc AS pageDesc
-    FROM pages
-    WHERE folderId == ? AND isDeleted == 0
-  `
-  const sqlResult = await DB.prepare(sql).bind(folderId).all<Page>()
   if (sqlResult.error) {
     throw sqlResult.error
   }
@@ -136,7 +118,7 @@ app.delete(
 
     const { id } = query
 
-    const allPages = await selectPagesByFolderId(c.env.DB, id)
+    const allPages = await selectPagesByFolderId(c.env.DB, { folderId: id })
 
     const [folderResult, pageResult] = await c.env.DB.batch([
       c.env.DB.prepare(`
