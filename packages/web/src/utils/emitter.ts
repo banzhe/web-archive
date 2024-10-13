@@ -1,3 +1,8 @@
 import mitt from 'mitt'
 
-export default mitt()
+type Events = {
+  movePage: { pageId: number, folderId: number }
+  refreshSideBar: void
+}
+
+export default mitt<Events>()

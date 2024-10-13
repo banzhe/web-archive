@@ -14,8 +14,8 @@ function fetcher<T>(url: string, {
 }: Options) {
   url = `/api${url}`
   return async () => {
-    if (body && method !== 'POST') {
-      toast.error('Body is only allowed for POST method')
+    if (body && (method !== 'POST' && method !== 'PUT')) {
+      toast.error('Body is only allowed for POST or PUT method')
       return
     }
     let queryString = ''
