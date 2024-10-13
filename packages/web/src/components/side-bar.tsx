@@ -1,5 +1,5 @@
 import { ScrollArea } from '@web-archive/shared/components/scroll-area'
-import { Separator } from '@web-archive/shared/components/separator'
+import { ThemeToggle } from '@web-archive/shared/components/theme-toggle'
 import { Button } from '@web-archive/shared/components/button'
 import { LogOut, Plus, Settings, Trash } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -50,15 +50,17 @@ function SideBar() {
   }
 
   return (
-    <div className="w-64 border-r h-screen">
+    <div className="w-64 h-screen">
       <NewFolderDialog afterSubmit={refresh} open={newFolderDialogOpen} setOpen={setNewFolderDialogOpen} />
       <ScrollArea className="h-full">
         <div className="p-4 min-h-full flex flex-col">
-          <Button variant="ghost" className="w-full text-sm justify-center bg-green-600 hover:bg-green-700 hover:text-white" onClick={() => setNewFolderDialogOpen(true)}>
-            <Plus className="w-5 h-5 mr-2" />
-            New Directory
-          </Button>
-          <Separator className="my-2" />
+          <div className="flex space-x-2">
+            <ThemeToggle></ThemeToggle>
+            <Button variant="ghost" className="flex-1 text-sm justify-center bg-green-600 hover:bg-green-700 dark:hover:text-white" onClick={() => setNewFolderDialogOpen(true)}>
+              <Plus className="w-5 h-5 mr-2" />
+              New Directory
+            </Button>
+          </div>
           <nav className="flex-1">
             <ul className="flex flex-col gap-2 justify-center items-center py-4">
               {folders?.map(folder => (
@@ -73,7 +75,6 @@ function SideBar() {
               ))}
             </ul>
           </nav>
-          <Separator className="my-2" />
           <Button variant="ghost" className="w-full text-sm justify-start">
             <Settings className="w-5 h-5 mr-2" />
             Settings

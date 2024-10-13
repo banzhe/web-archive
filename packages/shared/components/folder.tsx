@@ -32,7 +32,7 @@ function Folder({ id, name, isOpen, onClick, onDropPage }: FolderProps) {
   })
 
   return (
-    <li ref={folderRef} className={`flex flex-col justify-center cursor-pointer hover:bg-zinc-900 w-full p-2 rounded-md ${isOpen || isHover ? 'bg-zinc-900' : ''}`}>
+    <li ref={folderRef} className={`flex flex-col justify-center cursor-pointer hover:bg-accent w-full p-2 rounded-md ${isOpen || isHover ? 'bg-accent' : ''}`}>
       <div onClick={handleClick} className="flex items-center">
         {isOpen ? <FolderOpenIcon className="w-5 h-5 mr-5 ml-2" /> : <FolderIcon className="w-5 h-5 mr-5 ml-2" />}
         {name}
