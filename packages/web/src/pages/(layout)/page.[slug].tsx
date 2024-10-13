@@ -1,8 +1,8 @@
 import { Button } from '@web-archive/shared/components/button'
 import { Page } from '@web-archive/shared/types'
-import { useRequest } from 'ahooks'
+import { useKeyPress, useRequest } from 'ahooks'
 import { ArrowLeft, Maximize, Trash } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from '~/router'
 import fetcher from '~/utils/fetcher'
 
@@ -82,14 +82,28 @@ function ArchivePage() {
     goBack()
   }
 
+  const [isFullScreen, setIsFullScreen] = useState(false)
+  const handleFullScreen = () => {
+    setIsFullScreen(true)
+  }
+  const ESCCode = 27
+  useKeyPress(ESCCode, () => {
+    if (isFullScreen)
+      setIsFullScreen(false)
+  })
+
   return (
     <>
       <nav className="p-2 flex justify-between items-center">
         <Button variant="ghost" size="sm" onClick={goBack}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <div>
-          <Button variant="ghost" size="sm" className="mr-2">
+        <div className="flex space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleFullScreen}
+          >
             <Maximize className="w-5 h-5" />
           </Button>
           <Button
@@ -113,7 +127,7 @@ function ArchivePage() {
             : (
               <iframe
                 src={pageContentUrl}
-                className="w-full h-full"
+                className={`${isFullScreen ? 'fixed inset-0 w-screen h-screen bg-current' : 'w-full h-full bg-current'}`}
                 sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
               />
               )
