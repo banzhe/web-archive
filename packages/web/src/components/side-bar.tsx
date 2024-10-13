@@ -3,10 +3,11 @@ import { Separator } from '@web-archive/shared/components/separator'
 import { Button } from '@web-archive/shared/components/button'
 import { LogOut, Plus, Settings, Trash } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import type { Folder as FolderType } from '@web-archive/shared/types'
+import type { Folder as FolderType, Page } from '@web-archive/shared/types'
 import Folder from '@web-archive/shared/components/folder'
 import { useRequest } from 'ahooks'
 import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 import NewFolderDialog from './new-folder-dialog'
 import fetcher from '~/utils/fetcher'
 import emitter from '~/utils/emitter'
@@ -36,6 +37,18 @@ function SideBar() {
     navigate('/login')
   }
 
+  const handleDropPage = async (folderId: number, page: Page) => {
+    if (!page || page.folderId === folderId)
+      return
+
+    emitter.emit('movePage', { pageId: page.id, folderId })
+    await fetcher('/pages/update_page', {
+      method: 'PUT',
+      body: JSON.stringify({ id: page.id, folderId }),
+    })()
+    toast.success('Page moved successfully')
+  }
+
   return (
     <div className="w-64 border-r h-screen">
       <NewFolderDialog afterSubmit={refresh} open={newFolderDialogOpen} setOpen={setNewFolderDialogOpen} />
@@ -49,7 +62,14 @@ function SideBar() {
           <nav className="flex-1">
             <ul className="flex flex-col gap-2 justify-center items-center py-4">
               {folders?.map(folder => (
-                <Folder key={folder.id} name={folder.name} id={folder.id} isOpen={openedFolder === folder.id} onClick={handleFolderClick} />
+                <Folder
+                  key={folder.id}
+                  name={folder.name}
+                  id={folder.id}
+                  isOpen={openedFolder === folder.id}
+                  onClick={handleFolderClick}
+                  onDropPage={(page) => { handleDropPage(folder.id, page) }}
+                />
               ))}
             </ul>
           </nav>

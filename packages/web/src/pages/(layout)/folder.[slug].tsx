@@ -1,17 +1,18 @@
 import { Button } from '@web-archive/shared/components/button'
-import { Trash } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@web-archive/shared/components/card'
+import { Move, Trash } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@web-archive/shared/components/card'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@web-archive/shared/components/tooltip'
 import { Page } from '@web-archive/shared/types'
-import { useRequest } from 'ahooks'
-import React from 'react'
+import { useDrag, useRequest } from 'ahooks'
+import React, { useRef } from 'react'
 import { useNavigate, useParams } from '~/router'
 import fetcher from '~/utils/fetcher'
 import emitter from '~/utils/emitter'
+import { dragIcon } from '~/utils/drag'
 
 function FolderPage() {
   const { slug } = useParams('/folder/:slug')
-  const { data: pages, loading: pagesLoading } = useRequest(fetcher<Page[]>(`/pages/query`, {
+  const { data: pages, loading: pagesLoading, mutate: setPages } = useRequest(fetcher<Page[]>(`/pages/query`, {
     query: {
       folderId: slug,
     },
@@ -44,6 +45,12 @@ function FolderPage() {
     }
   }
 
+  emitter.on('movePage', ({ pageId }) => {
+    if (!pages)
+      return
+    setPages(pages.filter(page => page.id !== pageId))
+  })
+
   return (
     <div className="flex flex-col h-screen">
       <div className="p-2 flex justify-end items-center">
@@ -70,14 +77,20 @@ function FolderPage() {
               </div>
               )
             : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pages?.map(page => (
-                  <PageCard key={page.id} page={page} />
-                ))}
-              </div>
+              <PageCardContainer pages={pages} />
               )
         }
       </div>
+    </div>
+  )
+}
+
+function PageCardContainer({ pages }: { pages: Page[] | undefined }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {pages && pages.map(page => (
+        <PageCard key={page.id} page={page} />
+      ))}
     </div>
   )
 }
@@ -94,8 +107,19 @@ function PageCard({ page }: { page: Page }) {
     window.open(page.pageUrl, '_blank')
   }
 
+  const cardDragTarget = useRef(null)
+  useDrag(page, cardDragTarget, {
+    dragImage: {
+      image: dragIcon,
+    },
+  })
+
   return (
-    <Card key={page.id} onClick={() => handleClickPageCard(page)} className="cursor-pointer hover:shadow-lg transition-shadow">
+    <Card
+      key={page.id}
+      onClick={() => handleClickPageCard(page)}
+      className="cursor-pointer hover:shadow-lg transition-shadow flex flex-col"
+    >
       <CardHeader>
         <CardTitle>{page.title}</CardTitle>
         <CardDescription
@@ -105,9 +129,14 @@ function PageCard({ page }: { page: Page }) {
           {page.pageUrl}
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <p className="text-sm text-gray-600 dark:text-gray-400">{page.pageDesc}</p>
+      <CardContent className="flex-1">
+        <p className="h-auto text-sm text-gray-600 dark:text-gray-400">{page.pageDesc}</p>
       </CardContent>
+      <CardFooter className="flex">
+        <div ref={cardDragTarget}>
+          <Move />
+        </div>
+      </CardFooter>
     </Card>
   )
 }

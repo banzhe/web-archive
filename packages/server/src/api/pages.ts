@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { validator } from 'hono/validator'
 import type { D1Database } from '@cloudflare/workers-types/experimental'
+import { isNotNil, isNumberString } from '@web-archive/shared/utils'
 import type { HonoTypeUserInformation } from '~/constants/binding'
 import result from '~/utils/result'
 import { Page } from '~/sql/types'
@@ -174,6 +175,39 @@ app.delete(
       return c.json(result.success(null))
     }
     return c.json(result.error(500, 'Failed to delete page'))
+  },
+)
+
+app.put(
+  '/update_page',
+  validator('json', (value, c) => {
+    if (!value.id || Number.isNaN(Number(value.id))) {
+      return c.json(result.error(400, 'ID is required'))
+    }
+
+    if (!isNumberString(value.folderId)) {
+      return c.json(result.error(400, 'Folder ID should be a number'))
+    }
+
+    return {
+      id: Number(value.id),
+      folderId: isNotNil(value.folderId) ? Number(value.folderId) : undefined,
+    }
+  }),
+  async (c) => {
+    const { id, folderId } = c.req.valid('json')
+    if (isNotNil(folderId)) {
+      const updateResult = await c.env.DB.prepare(
+        'UPDATE pages SET folderId = ? WHERE id = ?',
+      )
+        .bind(folderId, id)
+        .run()
+      if (!updateResult.error) {
+        return c.json(result.success(null))
+      }
+      return c.json(result.error(500, 'Failed to update page'))
+    }
+    return c.json(result.success(null))
   },
 )
 
