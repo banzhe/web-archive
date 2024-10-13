@@ -50,7 +50,7 @@ function SideBar() {
   }
 
   return (
-    <div className="w-64 h-screen">
+    <div className="w-64 h-screen shadow-lg dark:shadow-zinc-600 dark:shadow-sm">
       <NewFolderDialog afterSubmit={refresh} open={newFolderDialogOpen} setOpen={setNewFolderDialogOpen} />
       <ScrollArea className="h-full">
         <div className="p-4 min-h-full flex flex-col">
