@@ -1,8 +1,8 @@
 import { Button } from '@web-archive/shared/components/button'
 import { Page } from '@web-archive/shared/types'
-import { useAsyncEffect, useRequest } from 'ahooks'
+import { useRequest } from 'ahooks'
 import { ArrowLeft, Maximize, Trash } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate, useParams } from '~/router'
 import fetcher from '~/utils/fetcher'
 
@@ -53,20 +53,16 @@ function ArchivePage() {
       window.history.back()
   }
 
-  const { data: pageHtml } = useRequest(async () => {
-    return await getPageContent(slug)
-  })
-  const [pageContent, setPageContent] = useState<string | null>(null)
-  useEffect(() => {
-    if (!pageHtml)
-      return
-
+  const { data: pageContentUrl, loading: pageLoading } = useRequest(async () => {
+    const pageHtml = await getPageContent(slug)
     const objectUrl = URL.createObjectURL(new Blob([pageHtml], { type: 'text/html' }))
-    setPageContent(objectUrl)
+    return objectUrl
+  })
+  useEffect(() => {
     return () => {
-      objectUrl && URL.revokeObjectURL(objectUrl)
+      pageContentUrl && URL.revokeObjectURL(pageContentUrl)
     }
-  }, [pageHtml])
+  }, [pageContentUrl])
 
   const { runAsync: runDeletePage } = useRequest(
     fetcher('/pages/delete_page', {
@@ -107,19 +103,19 @@ function ArchivePage() {
       </nav>
       <div className="flex-1 p-4">
         {
-          pageContent
+          pageLoading
             ? (
-              <iframe
-                src={pageContent}
-                className="w-full h-full"
-                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-              />
-              )
-            : (
-              <div className="flex flex-col items-center justify-center">
+              <div className="w-full h-full flex flex-col items-center justify-center">
                 <div className="m-b-xl h-8 w-8 animate-spin border-4 border-t-transparent rounded-full border-primary"></div>
                 <div>Loading...</div>
               </div>
+              )
+            : (
+              <iframe
+                src={pageContentUrl}
+                className="w-full h-full"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              />
               )
         }
       </div>
