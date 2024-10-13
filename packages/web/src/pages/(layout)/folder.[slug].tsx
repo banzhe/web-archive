@@ -1,5 +1,5 @@
 import { Button } from '@web-archive/shared/components/button'
-import { Move, Trash } from 'lucide-react'
+import { ExternalLink, Move, Trash } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@web-archive/shared/components/card'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@web-archive/shared/components/tooltip'
 import { Page } from '@web-archive/shared/types'
@@ -89,7 +89,7 @@ function FolderPage() {
       </div>
       <div className="flex-1 p-4 overflow-auto">
         {
-          pagesLoading
+          pagesLoading || (!pages)
             ? (
               <div className="w-full h-full flex flex-col items-center justify-center">
                 <div className="m-b-xl h-8 w-8 animate-spin border-4 border-t-transparent rounded-full border-primary"></div>
@@ -98,13 +98,23 @@ function FolderPage() {
               )
             : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pages && pages.map(page => (
-                  <PageCard key={page.id} page={page} onPageDelete={handlePageDelete} />
-                ))}
+                <PageList pages={pages.filter((_, index) => index % 3 === 0)} onPageDelete={handlePageDelete} />
+                <PageList pages={pages.filter((_, index) => index % 3 === 1)} onPageDelete={handlePageDelete} />
+                <PageList pages={pages.filter((_, index) => index % 3 === 2)} onPageDelete={handlePageDelete} />
               </div>
               )
         }
       </div>
+    </div>
+  )
+}
+
+function PageList({ pages, onPageDelete }: { pages?: Page[], onPageDelete: (page: Page) => void }) {
+  return (
+    <div className="flex flex-col space-y-4">
+      {pages && pages.map(page => (
+        <PageCard key={page.id} page={page} onPageDelete={onPageDelete} />
+      ))}
     </div>
   )
 }
@@ -143,22 +153,16 @@ function PageCard({ page, onPageDelete }: { page: Page, onPageDelete?: (page: Pa
     >
       <CardHeader>
         <CardTitle>{page.title}</CardTitle>
-        <CardDescription
-          onClick={e => handleClickPageUrl(e, page)}
-          className="cursor-pointer hover:underline break-words"
-        >
-          {page.pageUrl}
-        </CardDescription>
       </CardHeader>
       <CardContent className="flex-1">
         <p className="h-auto text-sm text-gray-600 dark:text-gray-400">{page.pageDesc}</p>
       </CardContent>
-      <CardFooter className="flex space-x-2">
+      <CardFooter className="flex space-x-2 justify-end">
 
         <TooltipProvider delayDuration={200}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="sm" ref={cardDragTarget}>
+              <Button variant="outline" size="sm" ref={cardDragTarget}>
                 <Move className="w-5 h-5" />
               </Button>
             </TooltipTrigger>
@@ -171,7 +175,20 @@ function PageCard({ page, onPageDelete }: { page: Page, onPageDelete?: (page: Pa
         <TooltipProvider delayDuration={200}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="destructive" size="sm" onClick={handleDeletePage}>
+              <Button variant="outline" size="sm" onClick={e => handleClickPageUrl(e, page)}>
+                <ExternalLink className="w-5 h-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Open in new tab
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="sm" onClick={handleDeletePage}>
                 <Trash className="w-5 h-5" />
               </Button>
             </TooltipTrigger>
