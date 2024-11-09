@@ -22,4 +22,12 @@ type Folder = {
   updatedAt: Date
 }
 
-export type { Page, Folder }
+type Tag = {
+  id: number
+  name: string
+  pageIds: Array<number>
+  createdAt: Date
+  updatedAt: Date
+}
+
+export type { Page, Folder, Tag }

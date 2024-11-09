@@ -4,7 +4,7 @@ import { Input } from '@web-archive/shared/components/input'
 import { Switch } from '@web-archive/shared/components/switch'
 import { useRequest } from 'ahooks'
 import { useForm } from 'react-hook-form'
-import { memo, useEffect } from 'react'
+import { memo, useContext, useEffect } from 'react'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@web-archive/shared/components/form'
 import { z } from 'zod'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@web-archive/shared/components/select'
@@ -12,9 +12,11 @@ import { Textarea } from '@web-archive/shared/components/textarea'
 import { Button } from '@web-archive/shared/components/button'
 import { toast } from 'react-hot-toast'
 import { useOutletContext } from 'react-router-dom'
+import AutoCompleteTagInput from '@web-archive/shared/components/auto-complete-tag-input'
 import LoadingWrapper from '~/components/loading-wrapper'
 import { getPageDetail, updatePage } from '~/data/page'
 import { getAllFolder } from '~/data/folder'
+import AppContext from '~/store/app'
 
 interface CardEditDialogProps {
   open: boolean
@@ -35,6 +37,8 @@ function Comp({ open, onOpenChange, pageId }: CardEditDialogProps) {
     pageUrl: z.string().min(1, { message: 'Page URL is required' }),
     isShowcased: z.number(),
     folderId: z.number(),
+    unbindTags: z.array(z.string()),
+    bindTags: z.array(z.string()),
   })
   const form = useForm<z.infer<typeof formSchema>>({
     defaultValues: {
@@ -43,6 +47,8 @@ function Comp({ open, onOpenChange, pageId }: CardEditDialogProps) {
       pageUrl: '',
       isShowcased: 0,
       folderId: 0,
+      unbindTags: [],
+      bindTags: [],
     },
   })
   const { loading, run: getPageDetailRun } = useRequest(
@@ -61,6 +67,19 @@ function Comp({ open, onOpenChange, pageId }: CardEditDialogProps) {
     },
   )
 
+  const { tagCache, refreshTagCache } = useContext(AppContext)
+  const selectTags = tagCache?.filter(tag => tag.pageIds.includes(pageId))
+  const handleTagChange = ({
+    bindTags,
+    unbindTags,
+  }: {
+    bindTags: string[]
+    unbindTags: string[]
+  }) => {
+    form.setValue('bindTags', bindTags)
+    form.setValue('unbindTags', unbindTags)
+  }
+
   useEffect(() => {
     if (open) {
       getPageDetailRun(pageId.toString())
@@ -71,10 +90,12 @@ function Comp({ open, onOpenChange, pageId }: CardEditDialogProps) {
     manual: true,
     onSuccess: () => {
       toast.success('Page updated successfully')
+      refreshTagCache()
       handleSearch()
       onOpenChange(false)
     },
   })
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTitle></DialogTitle>
@@ -165,6 +186,24 @@ function Comp({ open, onOpenChange, pageId }: CardEditDialogProps) {
                   </FormItem>
                 )}
               />
+              <FormField
+                name="tags"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Tags</FormLabel>
+                    <FormControl>
+                      <AutoCompleteTagInput
+                        tags={tagCache ?? []}
+                        selectTags={selectTags ?? []}
+                        onChange={handleTagChange}
+                      >
+                      </AutoCompleteTagInput>
+                    </FormControl>
+                  </FormItem>
+                )}
+              >
+
+              </FormField>
               <DialogFooter>
                 <DialogClose asChild>
                   <Button variant="outline">Cancel</Button>

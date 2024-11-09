@@ -113,6 +113,15 @@ onMessage('get-all-folders', async () => {
   }
 })
 
+onMessage('get-all-tags', async () => {
+  const tags = await request('/tags/all', {
+    method: 'GET',
+  })
+  return {
+    tags,
+  }
+})
+
 onMessage('add-save-page-task', async ({ data: { tabId, singleFileSetting, pageForm } }) => {
   createAndRunTask({
     tabId,

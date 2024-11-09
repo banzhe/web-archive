@@ -1,8 +1,10 @@
 import { isNotNil } from '@web-archive/shared/utils'
+import type { TagBindRecord } from './tag'
+import { generateUpdateTagSql } from './tag'
 import type { Page } from '~/sql/types'
 
-async function selectPageTotalCount(DB: D1Database, options: { folderId: number, keyword?: string }) {
-  const { folderId, keyword } = options
+async function selectPageTotalCount(DB: D1Database, options: { folderId: number, keyword?: string, tagId?: number }) {
+  const { folderId, keyword, tagId } = options
   let sql = `
     SELECT COUNT(*) as count FROM pages
     WHERE folderId = ? AND isDeleted = 0
@@ -12,6 +14,12 @@ async function selectPageTotalCount(DB: D1Database, options: { folderId: number,
     sql += ` AND title LIKE ?`
     bindParams.push(`${keyword}%`)
   }
+
+  if (isNotNil(tagId)) {
+    sql += ` AND id IN (SELECT value FROM json_each((SELECT pageIdDict FROM tags WHERE id = ?)))`
+    bindParams.push(tagId)
+  }
+
   const result = await DB.prepare(sql).bind(...bindParams).first()
   return result.count
 }
@@ -25,8 +33,8 @@ async function selectAllPageCount(DB: D1Database) {
   return result.count
 }
 
-async function queryPage(DB: D1Database, options: { folderId: number, pageNumber?: number, pageSize?: number, keyword?: string }) {
-  const { folderId, pageNumber, pageSize, keyword } = options
+async function queryPage(DB: D1Database, options: { folderId: number, pageNumber?: number, pageSize?: number, keyword?: string, tagId?: number }) {
+  const { folderId, pageNumber, pageSize, keyword, tagId } = options
   let sql = `
     SELECT
       id,
@@ -47,6 +55,11 @@ async function queryPage(DB: D1Database, options: { folderId: number, pageNumber
   if (keyword) {
     sql += ` AND title LIKE ?`
     bindParams.push(`%${keyword}%`)
+  }
+
+  if (isNotNil(tagId)) {
+    sql += ` AND id IN (SELECT value FROM json_each((SELECT pageIdDict FROM tags WHERE id = ?)))`
+    bindParams.push(tagId)
   }
 
   sql += ` ORDER BY createdAt DESC`
@@ -149,7 +162,7 @@ async function insertPage(DB: D1Database, pageOptions: InsertPageOptions) {
     )
     .bind(title, pageDesc, pageUrl, contentUrl, folderId, screenshotId)
     .run()
-  return insertResult.success
+  return insertResult.meta.last_row_id
 }
 
 async function clearDeletedPage(DB: D1Database) {
@@ -168,6 +181,35 @@ async function queryRecentSavePage(DB: D1Database) {
   return result.results
 }
 
+interface UpdatePageOptions {
+  id: number
+  folderId: number
+  title: string
+  isShowcased: boolean
+  pageDesc: string
+  pageUrl: string
+  bindTags?: Array<TagBindRecord>
+  unbindTags?: Array<TagBindRecord>
+}
+
+async function updatePage(DB: D1Database, options: UpdatePageOptions) {
+  const { id, folderId, title, isShowcased, pageDesc, pageUrl, bindTags = [], unbindTags = [] } = options
+  const sql = `
+    UPDATE pages
+    SET
+      folderId = ?,
+      title = ?,
+      isShowcased = ?,
+      pageDesc = ?,
+      pageUrl = ?
+    WHERE id = ?
+  `
+  const updateSql = DB.prepare(sql).bind(folderId, title, isShowcased, pageDesc, pageUrl, id)
+  const updateSqlList = generateUpdateTagSql(DB, bindTags, unbindTags)
+  const result = await DB.batch([updateSql, ...updateSqlList])
+  return result.every(r => r.success)
+}
+
 export {
   selectPageTotalCount,
   queryPage,
@@ -180,4 +222,5 @@ export {
   clearDeletedPage,
   queryRecentSavePage,
   selectAllPageCount,
+  updatePage,
 }

@@ -22,7 +22,7 @@ function FolderPage() {
   const { slug } = useParams('/folder/:slug')
 
   const scrollRef = useRef<Ref>(null)
-  const { keyword, searchTrigger } = useOutletContext<{ keyword: string, searchTrigger: boolean }>()
+  const { keyword, searchTrigger, selectedTag } = useOutletContext<{ keyword: string, searchTrigger: boolean, selectedTag: number | null }>()
   const PAGE_SIZE = 14
   const { data: pagesData, loading: pagesLoading, mutate: setPageData, loadingMore, reload } = useInfiniteScroll(
     async (d) => {
@@ -32,6 +32,7 @@ function FolderPage() {
         pageNumber,
         pageSize: PAGE_SIZE,
         keyword,
+        tagId: selectedTag,
       })
       return {
         list: res.list ?? [],

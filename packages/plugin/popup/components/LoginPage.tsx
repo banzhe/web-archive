@@ -22,7 +22,7 @@ function LoginPage({ setActivePage }: { setActivePage: (tab: PageType) => void }
   }
 
   return (
-    <div className="w-64 space-y-3 p-4 ">
+    <div className="w-80 space-y-3 p-4 ">
       <div className="flex flex-col space-y-1.5">
         <Label htmlFor="serverUrl">Server URL</Label>
         <Input

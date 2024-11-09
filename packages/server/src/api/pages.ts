@@ -3,11 +3,12 @@ import { validator } from 'hono/validator'
 import { isNil, isNotNil, isNumberString } from '@web-archive/shared/utils'
 import type { HonoTypeUserInformation } from '~/constants/binding'
 import result from '~/utils/result'
-import { clearDeletedPage, deletePageById, getPageById, insertPage, queryDeletedPage, queryPage, queryRecentSavePage, restorePage, selectPageTotalCount } from '~/model/page'
+import { clearDeletedPage, deletePageById, getPageById, insertPage, queryDeletedPage, queryPage, queryRecentSavePage, restorePage, selectPageTotalCount, updatePage } from '~/model/page'
 import { getFolderById, restoreFolder } from '~/model/folder'
 import { getFileFromBucket, saveFileToBucket } from '~/utils/file'
 import type { Page } from '~/sql/types'
 import { updateShowcase } from '~/model/showcase'
+import { updateBindPageByTagName } from '~/model/tag'
 
 const app = new Hono<HonoTypeUserInformation>()
 
@@ -30,6 +31,19 @@ app.post(
       return c.json(result.error(400, 'FolderId id should be a number'))
     }
 
+    if (isNotNil(value.bindTags)) {
+      if (typeof value.bindTags !== 'string')
+        return c.json(result.error(400, 'bindTags should be a string array'))
+      try {
+        const bindTags = JSON.parse(value.bindTags)
+        if (!Array.isArray(bindTags))
+          return c.json(result.error(400, 'bindTags should be a string array'))
+      }
+      catch (e) {
+        return c.json(result.error(400, 'bindTags should be a string array'))
+      }
+    }
+
     return {
       title: value.title,
       pageDesc: value.pageDesc as string,
@@ -37,10 +51,11 @@ app.post(
       pageFile: value.pageFile,
       folderId: Number(value.folderId),
       screenshot: value.screenshot,
+      bindTags: JSON.parse(value.bindTags ?? '[]') as string[],
     }
   }),
   async (c) => {
-    const { title, pageDesc = '', pageUrl, pageFile, folderId, screenshot } = c.req.valid('form')
+    const { title, pageDesc = '', pageUrl, pageFile, folderId, screenshot, bindTags } = c.req.valid('form')
 
     // todo check folder exists?
 
@@ -52,7 +67,7 @@ app.post(
     if (isNil(contentUrl)) {
       return c.json({ status: 'error', message: 'Failed to upload file' })
     }
-    const insertPageResult = await insertPage(c.env.DB, {
+    const insertId = await insertPage(c.env.DB, {
       title,
       pageDesc,
       pageUrl,
@@ -60,8 +75,10 @@ app.post(
       folderId,
       screenshotId,
     })
-    if (insertPageResult) {
-      return c.json(result.success(null))
+    if (isNotNil(insertId)) {
+      const updateTagResult = await updateBindPageByTagName(c.env.DB, bindTags.map(tagName => ({ tagName, pageIds: [insertId] })), [])
+      if (updateTagResult)
+        return c.json(result.success(null))
     }
     return c.json(result.error(500, 'Failed to insert page'))
   },
@@ -74,6 +91,10 @@ app.post(
       return c.json(result.error(400, 'Folder ID is required'))
     }
 
+    if (isNotNil(value.tagId) && !isNumberString(value.tagId)) {
+      return c.json(result.error(400, 'Tag ID should be a number'))
+    }
+
     if (value.pageNumber && !isNumberString(value.pageNumber)) {
       return c.json(result.error(400, 'Page number should be a number'))
     }
@@ -84,20 +105,21 @@ app.post(
 
     return {
       folderId: Number(value.folderId),
+      tagId: isNotNil(value.tagId) ? Number(value.tagId) : undefined,
       pageNumber: isNotNil(value.pageNumber) ? Number(value.pageNumber) : undefined,
       pageSize: isNotNil(value.pageSize) ? Number(value.pageSize) : undefined,
       keyword: value.keyword,
     }
   }),
   async (c) => {
-    const { folderId, pageNumber, pageSize, keyword } = c.req.valid('json')
+    const { folderId, pageNumber, pageSize, keyword, tagId } = c.req.valid('json')
 
     const [pages, total] = await Promise.all([
       queryPage(
         c.env.DB,
-        { folderId: Number(folderId), pageNumber, pageSize, keyword },
+        { folderId, pageNumber, pageSize, keyword, tagId },
       ),
-      selectPageTotalCount(c.env.DB, { folderId: Number(folderId), keyword }),
+      selectPageTotalCount(c.env.DB, { folderId, keyword, tagId }),
     ])
     return c.json(result.success({ list: pages, total }))
   },
@@ -173,6 +195,14 @@ app.put(
       return c.json(result.error(400, 'isShowcased is required'))
     }
 
+    if (isNotNil(value.bindTags) && !Array.isArray(value.bindTags)) {
+      return c.json(result.error(400, 'bindTags should be an array'))
+    }
+
+    if (isNotNil(value.unbindTags) && !Array.isArray(value.unbindTags)) {
+      return c.json(result.error(400, 'removeTags should be an array'))
+    }
+
     return {
       id: Number(value.id),
       folderId: Number(value.folderId),
@@ -180,22 +210,22 @@ app.put(
       isShowcased: value.isShowcased,
       pageDesc: value.pageDesc ?? '',
       pageUrl: value.pageUrl ?? '',
+      bindTags: value.bindTags as string[] ?? [],
+      unbindTags: value.unbindTags as string[] ?? [],
     }
   }),
   async (c) => {
-    const { id, folderId, title, isShowcased, pageDesc, pageUrl } = c.req.valid('json')
-    if (isNotNil(folderId)) {
-      const updateResult = await c.env.DB.prepare(
-        'UPDATE pages SET folderId = ?, title = ?, pageDesc = ?, pageUrl = ?, isShowcased = ? WHERE id = ?',
-      )
-        .bind(folderId, title, pageDesc, pageUrl, isShowcased, id)
-        .run()
-      if (!updateResult.error) {
-        return c.json(result.success(null))
-      }
-      return c.json(result.error(500, 'Failed to update page'))
-    }
-    return c.json(result.success(null))
+    const { id, folderId, title, isShowcased, pageDesc, pageUrl, bindTags, unbindTags } = c.req.valid('json')
+    if (isNil(folderId))
+      return c.json(result.success(null))
+
+    const bindTagParams = bindTags.map(tagName => ({ tagName, pageIds: [id] }))
+    const unbindTagParams = unbindTags.map(tagName => ({ tagName, pageIds: [id] }))
+    const updateSuccess = await updatePage(c.env.DB, { id, folderId, title, isShowcased, pageDesc, pageUrl, bindTags: bindTagParams, unbindTags: unbindTagParams })
+    if (updateSuccess)
+      return c.json(result.success(null))
+
+    return c.json(result.error(500, 'Failed to update page'))
   },
 )
 

@@ -20,20 +20,21 @@ function HistoryTaskList({ setActivePage }: { setActivePage: (tab: PageType) => 
   )
 
   return (
-    <div className="w-64 space-y-1.5 p-4">
+    <div className="w-80 space-y-2 p-4">
       <div className="h-6 mb-2 flex space-x-3 items-center justify-between">
         <ArrowLeft
           className="cursor-pointer"
-          size={16}
           onClick={() => { setActivePage('home') }}
         >
         </ArrowLeft>
         <ClearHistoryTaskListButton></ClearHistoryTaskListButton>
       </div>
-      <ScrollArea className="max-h-64">
-        {taskList && taskList.map(task => (
-          <TaskListItem key={task.uuid} task={task}></TaskListItem>
-        ))}
+      <ScrollArea>
+        <div className="max-h-64">
+          {taskList && taskList.map(task => (
+            <TaskListItem key={task.uuid} task={task}></TaskListItem>
+          ))}
+        </div>
       </ScrollArea>
     </div>
   )
@@ -53,7 +54,7 @@ function ClearHistoryTaskListButton() {
             className="p-1 h-6"
             onClick={handleClick}
           >
-            <Eraser size={14} />
+            <Eraser size={20} />
           </Button>
         </TooltipTrigger>
         <TooltipContent side="left" sideOffset={20}>

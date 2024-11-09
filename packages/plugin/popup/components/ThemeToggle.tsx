@@ -24,17 +24,17 @@ export function ThemeToggle() {
 
   if (theme === 'light') {
     return (
-      <Sun className={className} size={16} onClick={toggleTheme} />
+      <Sun className={className} onClick={toggleTheme} />
     )
   }
   else if (theme === 'dark') {
     return (
-      <Moon className={className} size={16} onClick={toggleTheme} />
+      <Moon className={className} onClick={toggleTheme} />
     )
   }
   else {
     return (
-      <SunMoon className={className} size={16} onClick={toggleTheme} />
+      <SunMoon className={className} onClick={toggleTheme} />
     )
   }
 }

@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useRequest } from 'ahooks'
 import { isNil, isNotNil } from '@web-archive/shared/utils'
 import toast from 'react-hot-toast'
+import AutoCompleteTagInput from '@web-archive/shared/components/auto-complete-tag-input'
 import { getSingleFileSetting } from '~/popup/utils/singleFile'
 import { takeScreenshot } from '~/popup/utils/screenshot'
 import { getCurrentTab } from '~/popup/utils/tab'
@@ -49,6 +50,11 @@ async function getAllFolders() {
   return folders
 }
 
+async function getAllTags() {
+  const { tags } = await sendMessage('get-all-tags', {})
+  return tags
+}
+
 function UploadPageForm({ setActivePage }: UploadPageFormProps) {
   const lastChooseFolderId = localStorage.getItem('lastChooseFolderId') || undefined
   const [uploadPageData, setUploadPageData] = useState({
@@ -57,6 +63,7 @@ function UploadPageForm({ setActivePage }: UploadPageFormProps) {
     href: '',
     folderId: lastChooseFolderId,
     screenshot: undefined as undefined | string,
+    bindTags: [] as string[],
   })
 
   const { data: folderList } = useRequest(getAllFolders, {
@@ -76,6 +83,17 @@ function UploadPageForm({ setActivePage }: UploadPageFormProps) {
         }))
         lastChooseFolderId && localStorage.removeItem('lastChooseFolderId')
       }
+    },
+  })
+
+  const { data: tagList } = useRequest(getAllTags, {
+    cacheKey: 'tagList',
+    setCache: (data) => {
+      localStorage.setItem('tagList', JSON.stringify(data))
+    },
+    getCache: () => {
+      const cache = localStorage.getItem('tagList')
+      return cache ? JSON.parse(cache) : []
     },
   })
 
@@ -131,6 +149,7 @@ function UploadPageForm({ setActivePage }: UploadPageFormProps) {
         href: uploadPageData.href,
         folderId: uploadPageData.folderId,
         screenshot: uploadPageData.screenshot,
+        bindTags: uploadPageData.bindTags,
       },
     })
     toast.success('Add save page task success')
@@ -146,7 +165,7 @@ function UploadPageForm({ setActivePage }: UploadPageFormProps) {
   }
 
   return (
-    <div className="w-64 p-4 space-y-4 flex flex-col">
+    <div className="w-80 p-4 space-y-4 flex flex-col">
       <div className="flex flex-col space-y-2">
         <Label
           htmlFor="title"
@@ -176,6 +195,20 @@ function UploadPageForm({ setActivePage }: UploadPageFormProps) {
           onChange={handleChange}
         >
         </Textarea>
+      </div>
+
+      <div className="flex flex-col space-y-2">
+        <Label>Tags</Label>
+        <AutoCompleteTagInput
+          tags={tagList ?? []}
+          onChange={({ bindTags }) => {
+            setUploadPageData(prevData => ({
+              ...prevData,
+              bindTags,
+            }))
+          }}
+        >
+        </AutoCompleteTagInput>
       </div>
 
       <div className="flex flex-col space-y-2">

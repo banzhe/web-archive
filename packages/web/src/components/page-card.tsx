@@ -1,19 +1,27 @@
 import type { Page } from '@web-archive/shared/types'
-import React, { memo, useState } from 'react'
+import React, { memo, useContext, useState } from 'react'
 import { useRequest } from 'ahooks'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@web-archive/shared/components/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@web-archive/shared/components/card'
 import { Button } from '@web-archive/shared/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@web-archive/shared/components/tooltip'
 import { ExternalLink, Eye, EyeOff, SquarePen, Trash } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import { Badge } from '@web-archive/shared/components/badge'
 import ScreenshotView from './screenshot-view'
 import { useNavigate } from '~/router'
 import { updatePageShowcase } from '~/data/page'
 import CardEditDialog from '~/components/card-edit-dialog'
+import AppContext from '~/store/app'
 
 function Comp({ page, onPageDelete }: { page: Page, onPageDelete?: (page: Page) => void }) {
   const navigate = useNavigate()
+
+  const { tagCache, refreshTagCache } = useContext(AppContext)
+  const bindTags = tagCache?.filter(tag => tag.pageIds.includes(page.id)) ?? []
+  const tagBadgeList = bindTags.map((tag) => {
+    return (<Badge key={tag.id} variant="outline" className="select-none">{tag.name}</Badge>)
+  })
 
   const location = useLocation()
   const isShowcased = location.pathname.startsWith('/showcase')
@@ -47,6 +55,11 @@ function Comp({ page, onPageDelete }: { page: Page, onPageDelete?: (page: Page) 
   )
 
   const [openCardEditDialog, setOpenCardEditDialog] = useState(false)
+  const handleEditPage = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    await refreshTagCache()
+    setOpenCardEditDialog(true)
+  }
 
   return (
     <div>
@@ -62,6 +75,9 @@ function Comp({ page, onPageDelete }: { page: Page, onPageDelete?: (page: Page) 
       >
         <CardHeader>
           <CardTitle className="leading-8 text-lg line-clamp-2">{page.title}</CardTitle>
+          <CardDescription className="space-x-1">
+            {tagBadgeList}
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex-1">
           <ScreenshotView
@@ -81,10 +97,7 @@ function Comp({ page, onPageDelete }: { page: Page, onPageDelete?: (page: Page) 
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setOpenCardEditDialog(true)
-                      }}
+                      onClick={handleEditPage}
                     >
                       <SquarePen className="w-5 h-5" />
                     </Button>

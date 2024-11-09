@@ -13,6 +13,7 @@ export interface SeriableSingleFileTask {
   title: string
   pageDesc: string
   folderId: string
+  bindTags: string[]
   startTimeStamp: number
   endTimeStamp?: number
   errorMessage?: string
@@ -68,6 +69,7 @@ type CreateTaskOptions = {
     pageDesc: string
     folderId: string
     screenshot?: string
+    bindTags: string[]
   }
   singleFileSetting: SingleFileSetting
 }
@@ -89,6 +91,7 @@ async function uploadPageData(pageForm: CreateTaskOptions['pageForm'] & { conten
   form.append('pageUrl', href)
   form.append('pageDesc', pageDesc)
   form.append('folderId', folderId)
+  form.append('bindTags', JSON.stringify(pageForm.bindTags))
   form.append('pageFile', new Blob([content], { type: 'text/html' }))
   if (screenshot) {
     form.append('screenshot', base64ToBlob(screenshot, 'image/webp'))
@@ -101,7 +104,7 @@ async function uploadPageData(pageForm: CreateTaskOptions['pageForm'] & { conten
 
 async function createAndRunTask(options: CreateTaskOptions) {
   const { singleFileSetting, tabId, pageForm } = options
-  const { href, title, pageDesc, folderId, screenshot } = pageForm
+  const { href, title, pageDesc, folderId, screenshot, bindTags } = pageForm
 
   const uuid = crypto.randomUUID()
   const task: SeriableSingleFileTask = {
@@ -113,6 +116,7 @@ async function createAndRunTask(options: CreateTaskOptions) {
     title,
     pageDesc,
     folderId,
+    bindTags,
     startTimeStamp: Date.now(),
   }
 
@@ -125,7 +129,7 @@ async function createAndRunTask(options: CreateTaskOptions) {
     task.status = 'uploading'
     await saveTaskList()
 
-    await uploadPageData({ content, href, title, pageDesc, folderId, screenshot })
+    await uploadPageData({ content, href, title, pageDesc, folderId, screenshot, bindTags })
     task.status = 'done'
     task.endTimeStamp = Date.now()
     await saveTaskList()

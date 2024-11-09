@@ -9,7 +9,7 @@ import type { SingleFileSetting } from '~/utils/singleFile'
 
 function SettingPage({ setActivePage }: { setActivePage: (tab: PageType) => void }) {
   return (
-    <div className="w-64 space-y-1.5 p-4">
+    <div className="w-80 space-y-2 p-4">
       <div className="h-6 mb-2 items-center flex space-x-3">
         <ArrowLeft
           className="cursor-pointer"

@@ -6,12 +6,13 @@ import showcase from '~/api/showcase'
 import pages from '~/api/pages'
 import auth from '~/api/auth'
 import folders from '~/api/folders'
+import tags from '~/api/tags'
 
 const app = new Hono<{ Bindings: Bindings }>()
 
 app.get('/', async (c) => {
   return c.html(
-`<!DOCTYPE html>
+    `<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
@@ -36,6 +37,7 @@ api.use(tokenMiddleware)
 api.route('/pages', pages)
 api.route('/auth', auth)
 api.route('/folders', folders)
+api.route('/tags', tags)
 api.route('/data', data)
 app.route('/api', api)
 

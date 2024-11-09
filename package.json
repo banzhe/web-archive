@@ -43,6 +43,7 @@
     "ahooks": "^3.8.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "emblor": "^1.4.6",
     "lucide-react": "^0.446.0",
     "mitt": "^3.0.1",
     "react": "^18.3.1",
