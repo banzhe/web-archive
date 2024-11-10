@@ -11,6 +11,14 @@ export async function formFileToArrayBuffer(file: File | string) {
   }
 }
 
+export async function removeBucketFile(BUCKET: R2Bucket, ids: string | string[]) {
+  if (isNil(ids)) {
+    return
+  }
+
+  await BUCKET.delete(ids)
+}
+
 export async function saveFileToBucket(BUCKET: R2Bucket, file: File | string) {
   if (isNil(file)) {
     return

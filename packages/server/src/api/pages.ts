@@ -87,8 +87,8 @@ app.post(
 app.post(
   '/query',
   validator('json', (value, c) => {
-    if (isNil(value.folderId) || !isNumberString(value.folderId)) {
-      return c.json(result.error(400, 'Folder ID is required'))
+    if (isNotNil(value.folderId) && !isNumberString(value.folderId)) {
+      return c.json(result.error(400, 'Folder ID should be a number'))
     }
 
     if (isNotNil(value.tagId) && !isNumberString(value.tagId)) {
@@ -104,7 +104,7 @@ app.post(
     }
 
     return {
-      folderId: Number(value.folderId),
+      folderId: isNotNil(value.folderId) ? Number(value.folderId) : undefined,
       tagId: isNotNil(value.tagId) ? Number(value.tagId) : undefined,
       pageNumber: isNotNil(value.pageNumber) ? Number(value.pageNumber) : undefined,
       pageSize: isNotNil(value.pageSize) ? Number(value.pageSize) : undefined,
@@ -286,7 +286,7 @@ app.post(
 app.delete(
   '/clear_deleted',
   async (c) => {
-    if (await clearDeletedPage(c.env.DB)) {
+    if (await clearDeletedPage(c.env.DB, c.env.BUCKET)) {
       return c.json(result.success(null))
     }
   },

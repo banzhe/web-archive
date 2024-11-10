@@ -7,6 +7,7 @@ import {
 interface AutoCompleteTagInputProps {
   tags: Tag[]
   selectTags?: Tag[]
+  shouldLimitHeight?: boolean
   onChange?: (options: {
     unbindTags: string[],
     bindTags: string[]
@@ -17,7 +18,7 @@ function toTagList(tags: Tag[]): { id: string, text: string }[] {
   return tags.map(tag => ({ id: tag.id.toString(), text: tag.name }))
 }
 
-function AutoCompleteTagInput({ tags, selectTags = [], onChange }: AutoCompleteTagInputProps) {
+function AutoCompleteTagInput({ tags, selectTags = [], onChange, shouldLimitHeight }: AutoCompleteTagInputProps) {
   const selectTagList = toTagList(selectTags)
   const [tagList, setTagList] = useState<Array<{ id: string, text: string }>>(selectTagList);
   const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null);
@@ -46,9 +47,12 @@ function AutoCompleteTagInput({ tags, selectTags = [], onChange }: AutoCompleteT
         inlineTagsContainer: "rounded-md",
         autoComplete: {
           popoverTrigger: "w-[calc(36px-0.75rem)]",
+          popoverContent: shouldLimitHeight ? "max-h-[150px] overflow-auto scrollbar-hide" : "",
+          commandList: "max-h-full"
         },
         input: "px-0"
       }}
+      addTagsOnBlur={true}
       autocompleteOptions={autoCompleteTags}
     >
     </TagInput>

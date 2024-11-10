@@ -1,9 +1,13 @@
 import { Button } from '@web-archive/shared/components/button'
 import { useRequest } from 'ahooks'
 import { ArrowLeft, Trash } from 'lucide-react'
-import { useEffect } from 'react'
+import { useContext, useEffect } from 'react'
+import IframePageContent from '~/components/iframe-page-content'
+import LoadingWrapper from '~/components/loading-wrapper'
+import ReadabilityPageContent from '~/components/readability-page-content'
 import { deletePage, getPageDetail } from '~/data/page'
 import { useNavigate, useParams } from '~/router'
+import AppContext from '~/store/app'
 
 async function getPageContent(pageId: string | undefined) {
   if (!pageId)
@@ -50,8 +54,7 @@ function ArchivePage() {
 
   const { data: pageContentUrl, loading: pageLoading } = useRequest(async () => {
     const pageHtml = await getPageContent(slug)
-    const objectUrl = URL.createObjectURL(new Blob([pageHtml], { type: 'text/html' }))
-    return objectUrl
+    return pageHtml
   })
   useEffect(() => {
     return () => {
@@ -74,13 +77,22 @@ function ArchivePage() {
     goBack()
   }
 
+  const { readMode, setReadMode } = useContext(AppContext)
+
   return (
-    <main className="h-screen flex flex-col">
-      <nav className="p-2 flex justify-between items-center">
+    <main className="h-screen w-screen lg:w-full flex flex-col">
+      <nav className="p-2 w-full flex justify-between items-center">
         <Button variant="ghost" size="sm" onClick={goBack}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div className="flex space-x-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setReadMode(!readMode)}
+          >
+            {readMode ? 'open Iframe mode' : 'open Read mode'}
+          </Button>
           <Button
             variant="destructive"
             size="sm"
@@ -90,23 +102,12 @@ function ArchivePage() {
           </Button>
         </div>
       </nav>
-      <div className="flex-1 p-4">
-        {
-          pageLoading
-            ? (
-              <div className="w-full h-full flex flex-col items-center justify-center">
-                <div className="m-b-xl h-8 w-8 animate-spin border-4 border-t-transparent rounded-full border-primary"></div>
-                <div>Loading...</div>
-              </div>
-              )
-            : (
-              <iframe
-                src={pageContentUrl}
-                className="w-full h-full bg-current"
-                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-              />
-              )
-        }
+      <div className="flex-1 p-4 w-full">
+        <LoadingWrapper loading={pageLoading}>
+          {readMode
+            ? <ReadabilityPageContent pageHtml={pageContentUrl || ''} />
+            : <IframePageContent pageHtml={pageContentUrl || ''} />}
+        </LoadingWrapper>
       </div>
     </main>
   )

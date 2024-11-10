@@ -12,12 +12,25 @@ function Routes() {
   const [view, setView] = useLocalStorageState('view', {
     defaultValue: 'card',
   })
+  const [readMode, setReadMode] = useLocalStorageState('readMode', {
+    defaultValue: false,
+  })
   const {
     data: tagCache,
     runAsync: refreshTagCache,
   } = useRequest(getAllTag)
   return (
-    <AppContext.Provider value={useMemo(() => ({ view: view as 'card' | 'list', setView, tagCache, refreshTagCache }), [view, setView, tagCache, refreshTagCache])}>
+    <AppContext.Provider value={
+      useMemo(() => ({
+        view: view as 'card' | 'list',
+        setView,
+        tagCache,
+        refreshTagCache,
+        readMode: readMode as boolean,
+        setReadMode,
+      }), [view, setView, tagCache, refreshTagCache, readMode, setReadMode])
+}
+    >
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <RouterProvider router={router} />
       </ThemeProvider>

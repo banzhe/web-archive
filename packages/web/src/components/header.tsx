@@ -16,8 +16,8 @@ function SearchBar({ className, keyword, setKeyword, handleSearch }: SearchBarPr
   const match = location.pathname.startsWith('/folder')
 
   return (
-    <div className={`${className ?? ''} flex justify-between items-center m-2 ${match ? '' : 'hidden'}`}>
-      <ViewToggle />
+    <div className={`${className ?? ''} flex items-center m-2 ${match ? 'justify-between' : 'justify-end'}`}>
+      {match && <ViewToggle />}
       <div className="flex items-center space-x-2">
         <div className="flex items-center border rounded-md px-3" cmdk-input-wrapper="">
           <Search className="h-4 w-4 shrink-0 opacity-50" />

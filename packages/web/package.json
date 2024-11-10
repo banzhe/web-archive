@@ -6,10 +6,12 @@
   },
   "dependencies": {
     "@generouted/react-router": "^1.19.6",
+    "@mozilla/readability": "^0.5.0",
     "@tailwindcss/line-clamp": "^0.4.4",
     "react-router-dom": "^6.24.0"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.15",
     "@web-archive/shared": "workspace:*"
   }
 }

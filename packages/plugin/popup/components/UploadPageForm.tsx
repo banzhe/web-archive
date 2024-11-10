@@ -201,6 +201,7 @@ function UploadPageForm({ setActivePage }: UploadPageFormProps) {
         <Label>Tags</Label>
         <AutoCompleteTagInput
           tags={tagList ?? []}
+          shouldLimitHeight
           onChange={({ bindTags }) => {
             setUploadPageData(prevData => ({
               ...prevData,
