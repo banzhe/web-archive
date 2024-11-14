@@ -16,7 +16,7 @@ import AutoCompleteTagInput from '@web-archive/shared/components/auto-complete-t
 import LoadingWrapper from '~/components/loading-wrapper'
 import { getPageDetail, updatePage } from '~/data/page'
 import { getAllFolder } from '~/data/folder'
-import AppContext from '~/store/app'
+import TagContext from '~/store/tag'
 
 interface CardEditDialogProps {
   open: boolean
@@ -67,7 +67,7 @@ function Comp({ open, onOpenChange, pageId }: CardEditDialogProps) {
     },
   )
 
-  const { tagCache, refreshTagCache } = useContext(AppContext)
+  const { tagCache, refreshTagCache } = useContext(TagContext)
   const selectTags = tagCache?.filter(tag => tag.pageIds.includes(pageId))
   const handleTagChange = ({
     bindTags,

@@ -28,11 +28,16 @@ app.post(
   async (c) => {
     const { name } = c.req.valid('json')
 
-    if (await insertFolder(c.env.DB, name)) {
-      return c.json(result.success(true))
+    try {
+      const folderId = await insertFolder(c.env.DB, name)
+      return c.json(result.success({
+        name,
+        id: folderId,
+      }))
     }
-
-    return c.json(result.error(500, 'Failed to create folder'))
+    catch (e) {
+      return c.json(result.error(500, 'Failed to create folder'))
+    }
   },
 )
 

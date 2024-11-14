@@ -1,6 +1,6 @@
 ## Web Archive
 
-![showcase](https://raw.githubusercontent.com/ray-d-song/web-archive/main/docs/imgs/showcase.gif)
+![showcase](https://raw.githubusercontent.com/ray-d-song/web-archive/main/docs/imgs/homepage.png)
 
 Web Archive 是一个网页归档工具，包含以下几个部分：
 
@@ -22,8 +22,9 @@ web-archive 是一个完全免费、无门槛的方案，而且 Cloudflare 可�
 - [x] 标题关键字查询
 - [x] 橱窗，可以分享自己抓取的页面
 - [x] 移动端适配
-- [ ] tag 分类系统
-- [ ] 将页面保存为 markdown
+- [x] tag 分类
+- [x] ~~将页面保存为 markdown~~ 阅读模式
+- [ ] 划词高亮？
 
 ## 部署指南
 Github Actions 一键部署(推荐)  

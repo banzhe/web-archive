@@ -6,7 +6,6 @@ import result from '~/utils/result'
 import { clearDeletedPage, deletePageById, getPageById, insertPage, queryDeletedPage, queryPage, queryRecentSavePage, restorePage, selectPageTotalCount, updatePage } from '~/model/page'
 import { getFolderById, restoreFolder } from '~/model/folder'
 import { getFileFromBucket, saveFileToBucket } from '~/utils/file'
-import type { Page } from '~/sql/types'
 import { updateShowcase } from '~/model/showcase'
 import { updateBindPageByTagName } from '~/model/tag'
 
@@ -31,6 +30,10 @@ app.post(
       return c.json(result.error(400, 'FolderId id should be a number'))
     }
 
+    if (!value.isShowcased || !isNumberString(value.isShowcased)) {
+      return c.json(result.error(400, 'isShowcased is required'))
+    }
+
     if (isNotNil(value.bindTags)) {
       if (typeof value.bindTags !== 'string')
         return c.json(result.error(400, 'bindTags should be a string array'))
@@ -52,10 +55,11 @@ app.post(
       folderId: Number(value.folderId),
       screenshot: value.screenshot,
       bindTags: JSON.parse(value.bindTags ?? '[]') as string[],
+      isShowcased: Boolean(Number(value.isShowcased)),
     }
   }),
   async (c) => {
-    const { title, pageDesc = '', pageUrl, pageFile, folderId, screenshot, bindTags } = c.req.valid('form')
+    const { title, pageDesc = '', pageUrl, pageFile, folderId, screenshot, bindTags, isShowcased } = c.req.valid('form')
 
     // todo check folder exists?
 
@@ -74,6 +78,7 @@ app.post(
       contentUrl,
       folderId,
       screenshotId,
+      isShowcased,
     })
     if (isNotNil(insertId)) {
       const updateTagResult = await updateBindPageByTagName(c.env.DB, bindTags.map(tagName => ({ tagName, pageIds: [insertId] })), [])
@@ -292,35 +297,36 @@ app.delete(
   },
 )
 
-app.get('/content', async (c) => {
-  const pageId = c.req.query('pageId')
-  // redirect to 404
-  if (!pageId) {
-    return c.redirect('/error')
-  }
+app.get(
+  '/content',
+  validator('query', (value, c) => {
+    if (isNil(value.pageId) || !isNumberString(value.pageId)) {
+      return c.json(result.error(400, 'Page ID is required and should be a number'))
+    }
 
-  // todo refactor
-  const pageListResult = await c.env.DB.prepare('SELECT * FROM pages WHERE isDeleted = 0 AND id = ?')
-    .bind(pageId)
-    .all()
-  if (!pageListResult.success) {
-    return c.redirect('/error')
-  }
+    return {
+      pageId: Number(value.pageId),
+    }
+  }),
+  async (c) => {
+    const { pageId } = c.req.valid('query')
 
-  const page = pageListResult.results?.[0] as Page
-  if (!page) {
-    return c.redirect('/error')
-  }
+    const page = await getPageById(c.env.DB, { id: pageId, isDeleted: false })
+    if (isNil(page)) {
+      return c.json(result.error(500, 'Page not found'))
+    }
 
-  const content = await c.env.BUCKET.get(page.contentUrl)
-  if (!content) {
-    return c.redirect('/error')
-  }
+    const content = await c.env.BUCKET.get(page.contentUrl)
+    if (!content) {
+      return c.json(result.error(500, 'Page data not found'))
+    }
 
-  return c.html(
-    await content?.text(),
-  )
-})
+    c.res.headers.set('cache-control', 'private, max-age=604800')
+    return c.html(
+      await content.text(),
+    )
+  },
+)
 
 app.put(
   '/update_showcase',
@@ -363,7 +369,7 @@ app.get(
     const screenshot = await getFileFromBucket(c.env.BUCKET, id)
 
     c.res.headers.set('Content-Type', 'image/webp')
-    c.res.headers.set('cache-control', 'public, max-age=31536000')
+    c.res.headers.set('cache-control', 'private, max-age=31536000')
 
     return c.body(await screenshot.arrayBuffer())
   },

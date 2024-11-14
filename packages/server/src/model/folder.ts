@@ -19,7 +19,10 @@ async function insertFolder(DB: D1Database, name: string) {
     VALUES (?)
   `
   const sqlResult = await DB.prepare(sql).bind(name).run()
-  return sqlResult.success
+  if (!sqlResult.success) {
+    throw sqlResult.error
+  }
+  return sqlResult.meta.last_row_id
 }
 
 async function updateFolder(DB: D1Database, options: { id: number, name: string }) {

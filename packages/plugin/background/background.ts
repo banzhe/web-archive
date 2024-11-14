@@ -113,6 +113,22 @@ onMessage('get-all-folders', async () => {
   }
 })
 
+onMessage('create-folder', async ({ data: { name } }) => {
+  try {
+    const folder = await request('/folders/create', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    return folder
+  }
+  catch (e) {
+    return undefined
+  }
+})
+
 onMessage('get-all-tags', async () => {
   const tags = await request('/tags/all', {
     method: 'GET',

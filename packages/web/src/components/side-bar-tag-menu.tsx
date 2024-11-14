@@ -10,7 +10,7 @@ import { useContext, useState } from 'react'
 import toast from 'react-hot-toast'
 import EditTagDialog from './edit-tag-dialog'
 import { deleteTag } from '~/data/tag'
-import AppContext from '~/store/app'
+import TagContext from '~/store/tag'
 
 interface SidebarTagMenuProps {
   selectedTag: number | null
@@ -59,7 +59,7 @@ function TagBadge({ tag, isSelected, onClick, onDelete, onEdit }: TagBadgeProps)
 }
 
 function SidebarTagMenu({ selectedTag, setSelectedTag }: SidebarTagMenuProps) {
-  const { tagCache: tags, refreshTagCache } = useContext(AppContext)
+  const { tagCache: tags, refreshTagCache } = useContext(TagContext)
   const [isTagsCollapseOpen, setIsTagsCollapseOpen] = useState(false)
 
   const handleClickTag = (tagId: number) => {

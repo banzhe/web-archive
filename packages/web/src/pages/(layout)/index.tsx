@@ -15,14 +15,18 @@ import Header from '~/components/header'
 import LoadingWrapper from '~/components/loading-wrapper'
 import CardView from '~/components/card-view'
 import LoadingMore from '~/components/loading-more'
+import { useShouldShowRecent } from '~/hooks/useShouldShowRecent'
 
 function RecentSavePageView() {
   const { data: r2Data, loading: r2Loading } = useRequest(getR2Usage)
+
+  const { shouldShowRencent } = useShouldShowRecent()
   const [pages, setPages] = useState<Page[]>([])
   useRequest(getRecentSavePage, {
     onSuccess: (data) => {
       setPages(data ?? [])
     },
+    ready: shouldShowRencent,
   })
   const { '2xl': is2xlScreen, xl: isXlScreen, md: isMdScreen } = useMediaQuery()
 
@@ -57,14 +61,26 @@ function RecentSavePageView() {
     <ScrollArea className="p-4 overflow-auto  h-[calc(100vh-58px)]">
       <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
         {
-          reorganizedPages.map((item, idx) => (
-            <div key={idx} className="flex flex-col gap-4">
-              {idx === 0 && <PageDataPieCard />}
-              {columnCount === 1 ? <R2UsageCard loading={r2Loading} data={r2Data} /> : idx === 1 && <R2UsageCard loading={r2Loading} data={r2Data} />}
-              {item}
-            </div>
-          ))
+          shouldShowRencent
+            ? reorganizedPages.map((item, idx) => (
+              <div key={idx} className="flex flex-col gap-4">
+                {idx === 0 && <PageDataPieCard />}
+                {columnCount === 1 ? <R2UsageCard loading={r2Loading} data={r2Data} /> : idx === 1 && <R2UsageCard loading={r2Loading} data={r2Data} />}
+                {item}
+              </div>
+            ))
+            : (
+                [
+                  <div key={1}>
+                    <PageDataPieCard key={1} />
+                  </div>,
+                  <div key={2}>
+                    <R2UsageCard loading={r2Loading} data={r2Data} key={2} />
+                  </div>,
+                ].map(item => (item))
+              )
         }
+
       </div>
     </ScrollArea>
   )

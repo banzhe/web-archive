@@ -6,7 +6,7 @@ import { useRequest } from 'ahooks'
 import { useContext, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { updateTag } from '~/data/tag'
-import AppContext from '~/store/app'
+import TagContext from '~/store/tag'
 
 interface EditTagProps {
   afterSubmit: () => void
@@ -19,7 +19,7 @@ interface EditTagProps {
 }
 
 function EditTagDialog({ afterSubmit, open, setOpen, editTag }: EditTagProps) {
-  const { tagCache } = useContext(AppContext)
+  const { tagCache } = useContext(TagContext)
   const [tagName, setTagName] = useState(editTag?.name ?? '')
   useEffect(() => {
     setTagName(editTag?.name ?? '')

@@ -8,7 +8,7 @@
     "128": "assets/icon.png"
   },
   "description": "SingleFile with categories and exhibition pages",
-  "version": "0.1.0",
+  "version": "0.1.1-alpha.1",
   "manifest_version": 3,
   "action": {
     "default_icon": "assets/icon.png",

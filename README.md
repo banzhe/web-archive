@@ -5,7 +5,7 @@
 
 ## Web Archive
 
-![showcase](https://raw.githubusercontent.com/ray-d-song/web-archive/main/docs/imgs/showcase.gif)
+![showcase](https://raw.githubusercontent.com/ray-d-song/web-archive/main/docs/imgs/homepage.png)
 
 Web Archive is a free web archiving and sharing service based on Cloudflare, including the following parts:  
 
@@ -28,8 +28,9 @@ Web Archive is a completely free and zero-threshold solution, and Cloudflare can
 - [x] Title keyword search
 - [x] Showcase, share the pages you captured
 - [x] Mobile support
-- [ ] Tag classification system
-- [ ] Save the page as markdown
+- [x] Tag classification system
+- [x] ~~Save the page as markdown~~ Read mode
+- [ ] Highlight the text?
 
 ## Deploy Guide
 Github Actions (Recommended)  

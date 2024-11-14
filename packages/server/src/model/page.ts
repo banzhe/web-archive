@@ -165,15 +165,16 @@ interface InsertPageOptions {
   contentUrl: string
   folderId: number
   screenshotId?: string
+  isShowcased: boolean
 }
 
 async function insertPage(DB: D1Database, pageOptions: InsertPageOptions) {
-  const { title, pageDesc, pageUrl, contentUrl, folderId, screenshotId = null } = pageOptions
+  const { title, pageDesc, pageUrl, contentUrl, folderId, screenshotId = null, isShowcased } = pageOptions
   const insertResult = await DB
     .prepare(
-      'INSERT INTO pages (title, pageDesc, pageUrl, contentUrl, folderId, screenshotId) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO pages (title, pageDesc, pageUrl, contentUrl, folderId, screenshotId, isShowcased) VALUES (?, ?, ?, ?, ?, ?, ?)',
     )
-    .bind(title, pageDesc, pageUrl, contentUrl, folderId, screenshotId)
+    .bind(title, pageDesc, pageUrl, contentUrl, folderId, screenshotId, isShowcased)
     .run()
   return insertResult.meta.last_row_id
 }

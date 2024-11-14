@@ -1,4 +1,4 @@
-import { HomeIcon, LogOut, Settings, Trash2 } from 'lucide-react'
+import { HomeIcon, LogOut, Settings, SquareLibrary, Trash2 } from 'lucide-react'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@web-archive/shared/components/side-bar'
 import { useEffect, useState } from 'react'
 import { isNumberString } from '@web-archive/shared/utils'
@@ -84,6 +84,16 @@ function Component({ selectedTag, setSelectedTag }: SidebarProps) {
 
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={() => {
+              setOpenedFolder(null)
+              navigate('/showcase/folder')
+            }}
+            >
+              <SquareLibrary className="mr-2 h-4 w-4" />
+              Showcase
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={() => {
               setSettingDialogOpen(true)
