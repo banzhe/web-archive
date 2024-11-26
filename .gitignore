@@ -36,3 +36,9 @@ lerna-debug.log*
 .DS_Store
 
 .secrets
+
+note.md
+note_zh.md
+
+docs/.vitepress/dist
+docs/.vitepress/cache

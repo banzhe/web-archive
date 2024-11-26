@@ -71,7 +71,7 @@ function Comp({ page, onPageDelete }: { page: Page, onPageDelete?: (page: Page) 
       <Card
         key={page.id}
         onClick={() => handleClickPageCard(page)}
-        className="cursor-pointer hover:shadow-lg transition-shadow flex flex-col relative group"
+        className="cursor-pointer hover:shadow-lg transition-shadow flex flex-col relative group overflow-hidden"
       >
         <CardHeader>
           <CardTitle className="leading-8 text-lg line-clamp-2">{page.title}</CardTitle>

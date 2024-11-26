@@ -22,9 +22,13 @@
     "dev:plugin": "pnpm --filter=plugin dev",
     "build:service": "pnpm --filter=server build && pnpm --filter=web build && node scripts/build_clear.mjs",
     "build:plugin": "pnpm --filter=plugin build",
+    "build:plugin-firefox": "pnpm --filter=plugin build:firefox",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prepare": "husky"
+    "prepare": "husky",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -34,6 +38,7 @@
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-dropdown-menu": "^2.1.2",
     "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-popover": "^1.1.2",
     "@radix-ui/react-scroll-area": "^1.2.0",
     "@radix-ui/react-select": "^2.1.2",
     "@radix-ui/react-separator": "^1.1.0",
@@ -43,6 +48,7 @@
     "ahooks": "^3.8.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "cmdk": "^1.0.4",
     "emblor": "^1.4.6",
     "lucide-react": "^0.446.0",
     "mitt": "^3.0.1",
@@ -54,6 +60,7 @@
     "recharts": "^2.13.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
+    "vitepress": "^1.5.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

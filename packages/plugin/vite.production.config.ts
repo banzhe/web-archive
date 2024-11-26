@@ -1,21 +1,24 @@
 import { resolve } from 'node:path'
+import process from 'node:process'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
+
+const isFirefox = process.argv.includes('--firefox')
 
 export default defineConfig({
   plugins: [
     react(),
     viteStaticCopy({
       targets: [
-        { src: 'manifest.json', dest: '.' },
+        { src: isFirefox ? 'manifest.firefox.json' : 'manifest.json', dest: '.', rename: 'manifest.json' },
         { src: 'lib', dest: '.' },
         { src: 'assets', dest: '.' },
       ],
     }),
   ],
   build: {
-    outDir: '../../dist/extension',
+    outDir: isFirefox ? '../../dist/extension-firefox' : '../../dist/extension',
     rollupOptions: {
       input: {
         popup: resolve(__dirname, 'popup/index.html'),

@@ -8,6 +8,7 @@ export default antfu({
     'packages/shared/components/*.tsx',
     'packages/web/src/router.ts',
     '**/*.md',
+    'docs/**/*',
   ],
   typescript: {
     parserOptions: {

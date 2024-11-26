@@ -6,7 +6,6 @@ import { useState } from 'react'
 import { sendMessage } from 'webext-bridge/popup'
 import { Textarea } from '@web-archive/shared/components/textarea'
 import { Button } from '@web-archive/shared/components/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@web-archive/shared/components/select'
 import { useRequest } from 'ahooks'
 import { isNil, isNotNil } from '@web-archive/shared/utils'
 import toast from 'react-hot-toast'
@@ -14,6 +13,7 @@ import AutoCompleteTagInput from '@web-archive/shared/components/auto-complete-t
 import { PlusIcon } from 'lucide-react'
 import { Switch } from '@web-archive/shared/components/switch'
 import NewFolderDialog from './NewFolderDialog'
+import FolderCombobox from './FolderCombobox'
 import { getSingleFileSetting } from '~/popup/utils/singleFile'
 import { takeScreenshot } from '~/popup/utils/screenshot'
 import { getCurrentTab } from '~/popup/utils/tab'
@@ -261,22 +261,22 @@ function UploadPageForm({ setActivePage }: UploadPageFormProps) {
           Folder
         </Label>
         <div className="flex space-x-2">
-          <Select
-            name="folderId"
-            value={uploadPageData.folderId}
-            onValueChange={handleFolderSelect}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="select folder"></SelectValue>
-            </SelectTrigger>
-            <SelectContent className="max-h-48">
-              {folderList && folderList.map(folder => (
-                <SelectItem key={folder.id} value={folder.id.toString()}>
-                  {folder.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex-1">
+            {/*
+              use combobox instead of select due to Select(v2.1.2) will auto close when resize event is fired
+              and popup in firefox will fire resize event after DOM mutations
+              https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/user_interface/Popups#:~:text=In%20Firefox%2C%20the%20size%20is%20calculated%20just%20before%20the%20popup%20is%20shown%2C%20and%20at%20most%2010%20times%20per%20second%20after%20DOM%20mutations.
+            */}
+            <FolderCombobox
+              value={uploadPageData.folderId}
+              onValueChange={handleFolderSelect}
+              options={(folderList ?? []).map(folder => ({
+                value: folder.id.toString(),
+                label: folder.name,
+              }))}
+            >
+            </FolderCombobox>
+          </div>
           <Button
             variant="secondary"
             className="w-12 h-10"

@@ -30,7 +30,7 @@ app.post(
       return c.json(result.error(400, 'FolderId id should be a number'))
     }
 
-    if (!value.isShowcased || !isNumberString(value.isShowcased)) {
+    if (isNotNil(value.isShowcased) && !isNumberString(value.isShowcased)) {
       return c.json(result.error(400, 'isShowcased is required'))
     }
 
@@ -55,7 +55,7 @@ app.post(
       folderId: Number(value.folderId),
       screenshot: value.screenshot,
       bindTags: JSON.parse(value.bindTags ?? '[]') as string[],
-      isShowcased: Boolean(Number(value.isShowcased)),
+      isShowcased: Boolean(Number(value.isShowcased ?? 0)),
     }
   }),
   async (c) => {

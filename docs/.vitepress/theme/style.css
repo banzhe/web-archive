@@ -1,0 +1,181 @@
+/**
+ * Customize default theme styling by overriding CSS variables:
+ * https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/vars.css
+ */
+
+/**
+ * Colors
+ *
+ * Each colors have exact same color scale system with 3 levels of solid
+ * colors with different brightness, and 1 soft color.
+ *
+ * - `XXX-1`: The most solid color used mainly for colored text. It must
+ *   satisfy the contrast ratio against when used on top of `XXX-soft`.
+ *
+ * - `XXX-2`: The color used mainly for hover state of the button.
+ *
+ * - `XXX-3`: The color for solid background, such as bg color of the button.
+ *   It must satisfy the contrast ratio with pure white (#ffffff) text on
+ *   top of it.
+ *
+ * - `XXX-soft`: The color used for subtle background such as custom container
+ *   or badges. It must satisfy the contrast ratio when putting `XXX-1` colors
+ *   on top of it.
+ *
+ *   The soft color must be semi transparent alpha channel. This is crucial
+ *   because it allows adding multiple "soft" colors on top of each other
+ *   to create a accent, such as when having inline code block inside
+ *   custom containers.
+ *
+ * - `default`: The color used purely for subtle indication without any
+ *   special meanings attached to it such as bg color for menu hover state.
+ *
+ * - `brand`: Used for primary brand colors, such as link text, button with
+ *   brand theme, etc.
+ *
+ * - `tip`: Used to indicate useful information. The default theme uses the
+ *   brand color for this by default.
+ *
+ * - `warning`: Used to indicate warning to the users. Used in custom
+ *   container, badges, etc.
+ *
+ * - `danger`: Used to show error, or dangerous message to the users. Used
+ *   in custom container, badges, etc.
+ * -------------------------------------------------------------------------- */
+
+:root {
+  /* base background color */
+  --vp-c-bg: #fafafa;
+  
+  /* Zinc theme color system */
+  --vp-c-brand-1: #3f3f46;
+  --vp-c-brand-2: #3f3f46;
+  --vp-c-brand-3: #18181B;
+  --vp-c-brand-soft: rgba(113, 113, 122, 0.14);
+
+  /* default text color */
+  --vp-c-text-1: #18181b;
+  --vp-c-text-2: #27272a;
+  --vp-c-text-3: #3f3f46;
+
+  /* warning message color */
+  --vp-c-warning-1: #f59e0b;
+  --vp-c-warning-2: #d97706;
+  --vp-c-warning-3: #b45309;
+  --vp-c-warning-soft: rgba(245, 158, 11, 0.14);
+
+  /* danger message color */
+  --vp-c-danger-1: #dc2626;
+  --vp-c-danger-2: #b91c1c;
+  --vp-c-danger-3: #991b1b;
+  --vp-c-danger-soft: rgba(220, 38, 38, 0.14);
+
+  /* button style */
+  --vp-button-brand-border: transparent;
+  --vp-button-brand-text: var(--vp-c-white);
+  --vp-button-brand-bg: var(--vp-c-brand-3);
+  --vp-button-brand-hover-border: transparent;
+  --vp-button-brand-hover-text: var(--vp-c-white);
+  --vp-button-brand-hover-bg: var(--vp-c-brand-2);
+  --vp-button-brand-active-border: transparent;
+  --vp-button-brand-active-text: var(--vp-c-white);
+  --vp-button-brand-active-bg: var(--vp-c-brand-1);
+
+
+  --vp-code-block-bg: #09090B;
+
+  /* homepage hero style */
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: -webkit-linear-gradient(
+    120deg,
+    #3b3b3b 30%,
+    #5c5c5c
+  );
+  
+  --vp-home-hero-image-background-image: linear-gradient(
+    -45deg,
+    #3b3b3b 50%,
+    #5c5c5c 50%
+  );
+  --vp-home-hero-image-filter: blur(44px);
+}
+
+/* dark theme */
+.dark {
+  --vp-c-bg: #09090B;
+  --vp-c-text-1: #fafafa;
+  --vp-c-text-2: #e4e4e7;
+  --vp-c-text-3: #FAFAFA;
+  
+  /* brand color in dark theme */
+  --vp-c-brand-1: #e4e4e7;
+  --vp-c-brand-2: #d4d4d8;
+  --vp-c-brand-3: #FAFAFA;
+  --vp-c-brand-soft: rgba(228, 228, 231, 0.14);
+
+  /* code block style */
+  --vp-code-block-bg: #18181B;
+
+  /* homepage hero style */
+  --vp-home-hero-name-background: -webkit-linear-gradient(
+    120deg,
+    #71717a 30%,
+    #a1a1aa
+  );
+  
+  --vp-home-hero-image-background-image: linear-gradient(
+    -45deg,
+    #71717a 50%,
+    #a1a1aa 50%
+  );
+}
+
+/* custom link color */
+:root {
+  --vp-c-brand: #71717a;
+  --vp-c-brand-light: #a1a1aa;
+  --vp-c-brand-lighter: #d4d4d8;
+  --vp-c-brand-dark: #52525b;
+  --vp-c-brand-darker: #3f3f46;
+}
+
+/**
+ * Component: Custom Block
+ * -------------------------------------------------------------------------- */
+
+:root {
+  --vp-custom-block-tip-border: transparent;
+  --vp-custom-block-tip-text: var(--vp-c-text-1);
+  --vp-custom-block-tip-bg: var(--vp-c-brand-soft);
+  --vp-custom-block-tip-code-bg: var(--vp-c-brand-soft);
+}
+
+/**
+ * Component: Algolia
+ * -------------------------------------------------------------------------- */
+
+.DocSearch {
+  --docsearch-primary-color: var(--vp-c-brand-1) !important;
+}
+
+/* sidebar style */
+.VPSidebar {
+  border-right: 1px solid var(--vp-c-brand-soft);
+  background-color: var(--vp-c-bg) !important;
+}
+
+.curtain {
+  background-color: var(--vp-c-bg) !important;
+}
+
+/* code block border */
+.vp-adaptive-theme {
+  border: 1px solid #28282D;
+}
+
+.dark .VPButton.brand {
+  color: var(--vp-c-bg);
+}
+.dark .VPButton.brand:hover {
+  color: var(--vp-c-bg);
+}
