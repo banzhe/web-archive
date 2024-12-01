@@ -3,10 +3,7 @@ name: Deploy-Preview
 on:
   push:
     branches:
-      - main
-      - hotfix
       - preview
-      - optimize
   workflow_dispatch:
 
 jobs:
@@ -15,6 +12,8 @@ jobs:
     name: Deploy
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: preview
 
       - name: Setup Node
         uses: actions/setup-node@v4
