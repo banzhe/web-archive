@@ -26,6 +26,7 @@ interface TagBadgeProps {
 }
 
 function TagBadge({ tag, isSelected, onClick, onDelete, onEdit }: TagBadgeProps) {
+  const labelText = `${tag.name} (${tag.pageIds.length})`
   return (
     <ContextMenu>
       <ContextMenuTrigger>
@@ -35,7 +36,7 @@ function TagBadge({ tag, isSelected, onClick, onDelete, onEdit }: TagBadgeProps)
           variant={isSelected ? 'default' : 'secondary'}
           onClick={onClick}
         >
-          {tag.name}
+          {labelText}
         </Badge>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-48">
