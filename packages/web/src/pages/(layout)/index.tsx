@@ -20,13 +20,13 @@ import { useShouldShowRecent } from '~/hooks/useShouldShowRecent'
 function RecentSavePageView() {
   const { data: r2Data, loading: r2Loading } = useRequest(getR2Usage)
 
-  const { shouldShowRencent } = useShouldShowRecent()
+  const { shouldShowRecent } = useShouldShowRecent()
   const [pages, setPages] = useState<Page[]>([])
   useRequest(getRecentSavePage, {
     onSuccess: (data) => {
       setPages(data ?? [])
     },
-    ready: shouldShowRencent,
+    ready: shouldShowRecent,
   })
   const { '2xl': is2xlScreen, xl: isXlScreen, md: isMdScreen } = useMediaQuery()
 
@@ -61,7 +61,7 @@ function RecentSavePageView() {
     <ScrollArea className="p-4 overflow-auto  h-[calc(100vh-58px)]">
       <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
         {
-          shouldShowRencent
+          shouldShowRecent
             ? reorganizedPages.map((item, idx) => (
               <div key={idx} className="flex flex-col gap-4">
                 {idx === 0 && <PageDataPieCard />}

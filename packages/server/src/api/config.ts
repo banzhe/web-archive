@@ -6,7 +6,7 @@ import result from '~/utils/result'
 
 const app = new Hono<HonoTypeUserInformation>()
 
-app.get('/should_show_rencent', async (c) => {
+app.get('/should_show_recent', async (c) => {
   try {
     const shouldShowRecent = await getShouldShowRecent(c.env.DB)
     return c.json(result.success(shouldShowRecent))
@@ -18,7 +18,7 @@ app.get('/should_show_rencent', async (c) => {
 })
 
 app.post(
-  '/should_show_rencent',
+  '/should_show_recent',
   validator('json', (value, c) => {
     if (typeof value.shouldShowRecent !== 'boolean') {
       return c.json(result.error(400, 'shouldShowRecent is required'))

@@ -1,31 +1,25 @@
-import { useEventListener, useRequest } from 'ahooks'
+import { useRequest } from 'ahooks'
 import toast from 'react-hot-toast'
 import { getShouldShowRecent, setShouldShowRecent } from '~/data/config'
 
 export function useShouldShowRecent() {
-  const { data: shouldShowRencent, mutate } = useRequest(
+  const cachedKey = 'config/should_show_recent'
+  const { data: shouldShowRecent, mutate } = useRequest(
     getShouldShowRecent,
     {
-      cacheKey: 'config/should_show_rencent',
+      cacheKey: cachedKey,
       setCache: (data) => {
         console.log('update cache', data)
-        localStorage.setItem('config/should_show_rencent', JSON.stringify(data))
+        localStorage.setItem(cachedKey, JSON.stringify(data))
       },
       getCache: () => {
-        return JSON.parse(localStorage.getItem('config/should_show_rencent') ?? 'true')
+        return JSON.parse(localStorage.getItem(cachedKey) ?? 'true')
       },
     },
   )
 
-  useEventListener('storage', (e) => {
-    if (e.key === 'config/should_show_rencent') {
-      const newValue = JSON.parse(e.newValue ?? 'true')
-      mutate(newValue)
-    }
-  })
-
   const updateShouldShowRecent = async (newValue: boolean) => {
-    const previousValue = shouldShowRencent
+    const previousValue = shouldShowRecent
     mutate(newValue)
     try {
       await setShouldShowRecent(newValue)
@@ -36,5 +30,5 @@ export function useShouldShowRecent() {
     }
   }
 
-  return { shouldShowRencent, updateShouldShowRecent }
+  return { shouldShowRecent, updateShouldShowRecent }
 }
