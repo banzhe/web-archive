@@ -1,0 +1,107 @@
+import { Button } from '@web-archive/shared/components/button'
+import { AlertCircle, Check, Loader2 } from 'lucide-react'
+import { useState } from 'react'
+import type { GenerateTagProps } from '@web-archive/shared/utils'
+import { generateTagByOpenAI } from '@web-archive/shared/utils'
+import { useRequest } from 'ahooks'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@web-archive/shared/components/tooltip'
+import type { AITagConfig } from '@web-archive/shared/types'
+import { generateTag } from '~/data/tag'
+
+interface Props {
+  config: AITagConfig
+  onValidate: () => Promise<boolean>
+}
+
+async function generateTagByConfig(config: GenerateTagProps) {
+  if (config.type === 'openai') {
+    return await generateTagByOpenAI(config)
+  }
+  return await generateTag(config)
+}
+
+function AITagTestConnectionButton({ config, onValidate }: Props) {
+  const [status, setStatus] = useState<'untested' | 'success' | 'error'>('untested')
+  const [error, setError] = useState<string | null>()
+
+  const { runAsync: testConnection, loading } = useRequest(generateTagByConfig, {
+    manual: true,
+  })
+
+  async function handleTest() {
+    const isValid = await onValidate()
+    if (!isValid)
+      return
+
+    try {
+      await testConnection({
+        title: 'Test Title',
+        pageDesc: 'Test Description',
+        ...config,
+      })
+      setStatus('success')
+    }
+    catch (error: any) {
+      setStatus('error')
+      setError(error?.message)
+    }
+  }
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleTest}
+            disabled={loading}
+            className="min-w-[120px] flex items-center gap-2"
+          >
+            {loading
+              ? (
+                <>
+                  <Loader2 className="animate-spin"></Loader2>
+                  Testing...
+                </>
+                )
+              : (
+                <>
+                  {status === 'untested' && (
+                    <>
+                      Test Connection
+                    </>
+                  )}
+                  {status === 'success' && (
+                    <>
+                      <Check className="w-4 h-4 text-primary" />
+                      Successed
+                    </>
+                  )}
+                  {status === 'error' && (
+                    <>
+                      <AlertCircle className="w-4 h-4 text-destructive" />
+                      Failed
+                    </>
+                  )}
+                </>
+                )}
+          </Button>
+        </TooltipTrigger>
+        {
+          status === 'error' && (
+            <TooltipContent>
+              <p className="text-destructive">
+                {error}
+              </p>
+            </TooltipContent>
+          )
+        }
+
+      </Tooltip>
+    </TooltipProvider>
+
+  )
+}
+
+export default AITagTestConnectionButton

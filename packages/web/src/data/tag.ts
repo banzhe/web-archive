@@ -21,8 +21,16 @@ function updateTag(body: { id: number, name: string }): Promise<void> {
   })
 }
 
+function generateTag(body: { title: string, pageDesc: string, model: string, preferredTags: string[], tagLanguage: string }): Promise<string[]> {
+  return fetcher<string[]>('/tags/generate_tag', {
+    method: 'POST',
+    body,
+  })
+}
+
 export {
   getAllTag,
   deleteTag,
   updateTag,
+  generateTag,
 }

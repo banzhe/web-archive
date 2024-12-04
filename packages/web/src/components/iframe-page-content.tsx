@@ -1,9 +1,8 @@
 interface IframePageContentProps {
-  pageHtml: string
+  pageContentUrl: string
 }
 
-function IframePageContent({ pageHtml }: IframePageContentProps) {
-  const pageContentUrl = URL.createObjectURL(new Blob([pageHtml], { type: 'text/html' }))
+function IframePageContent({ pageContentUrl }: IframePageContentProps) {
   return (
     <iframe
       src={pageContentUrl}

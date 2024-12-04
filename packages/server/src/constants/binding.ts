@@ -3,6 +3,7 @@ export type Bindings = {
   DB: D1Database
   KV: KVNamespace
   BUCKET: R2Bucket
+  AI: Ai
 }
 
 export type HonoTypeUserInformation = {

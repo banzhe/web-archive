@@ -1,5 +1,5 @@
 import { Tag } from "types"
-import { useState } from "react"
+import { useState, forwardRef, useImperativeHandle, useRef } from "react"
 import {
   TagInput
 } from 'emblor';
@@ -14,11 +14,15 @@ interface AutoCompleteTagInputProps {
   }) => void
 }
 
+export interface AutoCompleteTagInputRef {
+  addTags: (tag: Array<string>) => void
+}
+
 function toTagList(tags: Tag[]): { id: string, text: string }[] {
   return tags.map(tag => ({ id: tag.id.toString(), text: tag.name }))
 }
 
-function AutoCompleteTagInput({ tags, selectTags = [], onChange, shouldLimitHeight }: AutoCompleteTagInputProps) {
+const AutoCompleteTagInput = forwardRef<AutoCompleteTagInputRef, AutoCompleteTagInputProps>(({ tags, selectTags = [], onChange, shouldLimitHeight }, ref) => {
   const selectTagList = toTagList(selectTags)
   const [tagList, setTagList] = useState<Array<{ id: string, text: string }>>(selectTagList);
   const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null);
@@ -32,6 +36,18 @@ function AutoCompleteTagInput({ tags, selectTags = [], onChange, shouldLimitHeig
       bindTags: newTagList.map(tag => tag.text)
     })
   };
+
+  useImperativeHandle(ref, () => ({
+    addTags: (tags: Array<string>) => {
+      const unselectTags = tags.filter(tag => !tagList.find(item => item.text === tag))
+      const existTags = autoCompleteTags.filter(tag => unselectTags.includes(tag.text))
+      const notExistTags = unselectTags
+        .filter(tag => !existTags.find(item => item.text === tag))
+        .map(item => ({ id: crypto.getRandomValues(new Uint32Array(1))[0].toString(), text: item }))
+      setTags([...tagList, ...existTags, ...notExistTags])
+    }
+  }))
+
   return (
     <TagInput
       tags={tagList}
@@ -50,13 +66,13 @@ function AutoCompleteTagInput({ tags, selectTags = [], onChange, shouldLimitHeig
           popoverContent: shouldLimitHeight ? "max-h-[150px] overflow-auto scrollbar-hide" : "",
           commandList: "max-h-full"
         },
-        input: "px-0"
+        input: "px-0 shadow-none"
       }}
       addTagsOnBlur={true}
       autocompleteOptions={autoCompleteTags}
     >
     </TagInput>
   )
-}
+})
 
 export default AutoCompleteTagInput

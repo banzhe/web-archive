@@ -8,10 +8,10 @@ import { useEffect, useState } from 'react'
  * @param initialObject - `null` or an instance of `File`, `Blob` or `MediaSource`.
  * @source https://github.com/VitorLuizC/use-object-url/blob/master/src/index.ts
  */
-function useObjectURL(initialObject: null | File | Blob | MediaSource) {
+function useObjectURL(initialObject: null | File | Blob | MediaSource | string | undefined) {
   const [objectURL, setObjectURL] = useState<null | string>(null)
 
-  const [object, setObject] = useState<null | File | Blob | MediaSource>(
+  const [object, setObject] = useState<null | File | Blob | MediaSource | string | undefined>(
     initialObject,
   )
 
@@ -20,7 +20,9 @@ function useObjectURL(initialObject: null | File | Blob | MediaSource) {
       return
     }
 
-    const objectURL = URL.createObjectURL(object)
+    const targetObject = (typeof object === 'string' ? new Blob([object], { type: 'text/html' }) : object)
+
+    const objectURL = URL.createObjectURL(targetObject)
     setObjectURL(objectURL)
     return () => {
       URL.revokeObjectURL(objectURL)

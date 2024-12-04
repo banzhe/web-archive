@@ -1,6 +1,7 @@
 import { sendMessage } from 'webext-bridge/background'
 import Browser from 'webextension-polyfill'
 import { request } from './background'
+import { keepAlive } from './keepAlive'
 import type { SingleFileSetting } from '~/utils/singleFile'
 import { base64ToBlob } from '~/utils/file'
 
@@ -20,46 +21,54 @@ export interface SeriableSingleFileTask {
   errorMessage?: string
 }
 
-const taskList: SeriableSingleFileTask[] = []
+async function markUnfinishedTasksAsFailed() {
+  const tasks = await getTaskList()
+  tasks.forEach((task: SeriableSingleFileTask) => {
+    if (task.status !== 'done' && task.status !== 'failed') {
+      task.status = 'failed'
+      task.endTimeStamp = Date.now()
+      task.errorMessage = 'Failed because of service worker restart'
+    }
+  })
+  await saveTaskList(tasks)
+}
 
 let isInit = false
-async function initTask() {
-  if (isInit) {
-    return
+Browser.runtime.onConnect.addListener(() => {
+  console.log('connect', isInit)
+  if (!isInit) {
+    isInit = true
+    markUnfinishedTasksAsFailed()
   }
-
-  const { tasks } = await Browser.storage.local.get('tasks')
-  if (tasks) {
-    tasks.forEach((task: SeriableSingleFileTask) => {
-      if (task.status !== 'done' && task.status !== 'failed') {
-        task.status = 'failed'
-        task.endTimeStamp = Date.now()
-        task.errorMessage = 'unexpected shutdown'
-      }
-    })
-    taskList.splice(0, taskList.length, ...tasks)
-  }
-  isInit = true
-}
-
-Browser.runtime.onStartup.addListener(async () => {
-  console.log('onStartup')
-  await initTask()
 })
 
-async function getTaskList() {
-  await initTask()
-  return taskList
+async function getTaskList(): Promise<SeriableSingleFileTask[]> {
+  const { tasks } = await Browser.storage.local.get('tasks')
+  return tasks || []
 }
 
-async function saveTaskList() {
-  await Browser.storage.local.set({ tasks: taskList })
+async function saveTaskList(tasks: SeriableSingleFileTask[]) {
+  await Browser.storage.local.set({ tasks })
+}
+
+async function saveTask(task: SeriableSingleFileTask) {
+  const tasks = await getTaskList()
+
+  const index = tasks.findIndex(t => t.uuid === task.uuid)
+  if (index === -1) {
+    tasks.push(task)
+  }
+  else {
+    tasks[index] = task
+  }
+  await Browser.storage.local.set({ tasks })
 }
 
 async function clearFinishedTaskList() {
-  const newTaskList = taskList.filter(task => task.status !== 'done')
-  taskList.splice(0, taskList.length, ...newTaskList)
-  await saveTaskList()
+  const tasks = await getTaskList()
+
+  const newTasks = tasks.filter(task => task.status !== 'done' && task.status !== 'failed')
+  await saveTaskList(newTasks)
 }
 
 type CreateTaskOptions = {
@@ -99,9 +108,12 @@ async function uploadPageData(pageForm: CreateTaskOptions['pageForm'] & { conten
   if (screenshot) {
     form.append('screenshot', base64ToBlob(screenshot, 'image/webp'))
   }
+  const timeout = 5 * 60 * 1000
+  keepAlive(timeout)
   await request('/pages/upload_new_page', {
     method: 'POST',
     body: form,
+    timeout,
   })
 }
 
@@ -127,29 +139,28 @@ async function createAndRunTask(options: CreateTaskOptions) {
   // todo wait refactor, add progress
   async function run() {
     task.status = 'scraping'
-    await saveTaskList()
+    await saveTask(task)
     const content = await scrapePageData(singleFileSetting, tabId)
 
     task.status = 'uploading'
-    await saveTaskList()
+    await saveTask(task)
 
     await uploadPageData({ content, href, title, pageDesc, folderId, screenshot, bindTags, isShowcased })
     task.status = 'done'
     task.endTimeStamp = Date.now()
-    await saveTaskList()
+    await saveTask(task)
   }
 
-  taskList.push(task)
-  await saveTaskList()
+  await saveTask(task)
   try {
     await run()
   }
   catch (e: any) {
     task.status = 'failed'
     task.endTimeStamp = Date.now()
-    console.error('tsak failed', e, task)
+    console.error('task failed', e, task)
     task.errorMessage = typeof e === 'string' ? e : e.message
-    await saveTaskList()
+    await saveTask(task)
   }
 }
 

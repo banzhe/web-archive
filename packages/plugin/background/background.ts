@@ -43,10 +43,17 @@ async function appendAuthHeader(options?: RequestInit) {
 }
 
 /* global RequestInit */
-export async function request(url: string, options?: RequestInit | undefined) {
+export async function request(url: string, options?: (RequestInit & { timeout?: number }) | undefined) {
   const { serverUrl } = await Browser.storage.local.get('serverUrl')
+  const abortController = new AbortController()
+  if (options?.timeout) {
+    setTimeout(() => {
+      abortController.abort('upload timeout')
+    }, options.timeout)
+  }
   const res = await fetch(`${serverUrl}/api${url}`, {
     credentials: 'same-origin',
+    signal: abortController.signal,
     ...await appendAuthHeader(options),
   })
   if (res.ok) {
@@ -168,5 +175,34 @@ onMessage('scrape-available', async ({ data: { tabId } }) => {
   }
   catch (e) {
     return { available: false }
+  }
+})
+
+onMessage('get-ai-tag-config', async () => {
+  const aiTagConfig = await request('/config/ai_tag', {
+    method: 'GET',
+  })
+  console.log(aiTagConfig)
+  return {
+    aiTagConfig,
+  }
+})
+
+onMessage('generate-tag', async ({ data: { title, pageDesc, tagLanguage, preferredTags, model } }) => {
+  const tags = await request('/tags/generate_tag', {
+    method: 'POST',
+    body: JSON.stringify({
+      title,
+      pageDesc,
+      tagLanguage,
+      preferredTags,
+      model,
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  return {
+    tags,
   }
 })

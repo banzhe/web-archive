@@ -12,3 +12,6 @@ binding = "DB"
 database_name = "web-archive"
 database_id = "xxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 migrations_dir = './src/sql/migrations'
+
+[ai]
+binding = "AI"

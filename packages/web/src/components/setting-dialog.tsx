@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@web-archive/shared/components/switch'
 import { useTheme } from '@web-archive/shared/components/theme-provider'
 import { Settings } from 'lucide-react'
+import AITagSettingCollapsible from './ai-tag-setting-collapsible'
 import { useShouldShowRecent } from '~/hooks/useShouldShowRecent'
 
 function SettingDialog({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
@@ -43,6 +44,9 @@ function SettingDialog({ open, setOpen }: { open: boolean, setOpen: (open: boole
               onCheckedChange={updateShouldShowRecent}
             >
             </Switch>
+          </div>
+          <div>
+            <AITagSettingCollapsible></AITagSettingCollapsible>
           </div>
         </div>
       </DialogContent>
