@@ -4,10 +4,12 @@ import type { ChartConfig } from '@web-archive/shared/components/chart'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@web-archive/shared/components/chart'
 import { useRequest } from 'ahooks'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import ChartCardSkeleton from './common/chart-card-skeleton'
 import { getPageChartData } from '~/data/data'
 
 function TotalPieCard() {
+  const { t } = useTranslation()
   const { data: pageChartData, loading } = useRequest(getPageChartData)
   const chartConfig = useMemo(() => {
     if (!pageChartData)
@@ -34,7 +36,7 @@ function TotalPieCard() {
   return (
     <Card className="flex flex-col">
       <CardHeader>
-        <CardTitle className="text-lg">Total Archived Pages</CardTitle>
+        <CardTitle className="text-lg">{t('total-archived-pages')}</CardTitle>
         <CardDescription></CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">

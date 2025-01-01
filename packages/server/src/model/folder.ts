@@ -82,7 +82,7 @@ async function getFolderById(DB: D1Database, options: { id: number, isDeleted?: 
     WHERE id = ?
   `
   const folder = await DB.prepare(sql).bind(id).first<Folder>()
-  if (isNotNil(isDeleted) && folder.isDeleted !== Number(isDeleted)) {
+  if (isNotNil(isDeleted) && folder?.isDeleted !== Number(isDeleted)) {
     return null
   }
   return folder
@@ -108,7 +108,7 @@ async function selectDeletedFolderTotalCount(DB: D1Database) {
     WHERE isDeleted == 1
   `
   const sqlResult = await DB.prepare(sql).first<{ count: number }>()
-  return sqlResult.count
+  return sqlResult?.count ?? 0
 }
 
 async function restoreFolder(DB: D1Database, id: number) {

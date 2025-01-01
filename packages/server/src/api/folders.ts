@@ -89,7 +89,7 @@ app.put(
 
     return {
       id: Number(value.id),
-      name: value.name as string | undefined,
+      name: value.name,
     }
   }),
   async (c) => {

@@ -3,31 +3,33 @@ import { useRequest } from 'ahooks'
 import { ArchiveRestore } from 'lucide-react'
 import { useEffect } from 'react'
 import toast from 'react-hot-toast'
+import { useTranslation } from 'react-i18next'
 import EmptyWrapper from '~/components/empty-wrapper'
 import ListView from '~/components/list-view'
 import { clearDeletedPage, queryDeletedPage, restorePage } from '~/data/page'
 
 function Trash() {
+  const { t } = useTranslation()
   const { data, run: fetchPage } = useRequest(queryDeletedPage, {
     manual: true,
   })
   const { run: runRestorePage } = useRequest(restorePage, {
     manual: true,
     onSuccess: () => {
-      toast.success('Restore page success')
+      toast.success(t('restore-page-success'))
       fetchPage()
     },
   })
   const { run: runClearDeletedPage } = useRequest(clearDeletedPage, {
     manual: true,
     onSuccess: () => {
-      toast.success('Clear deleted page success')
+      toast.success(t('clear-success'))
       fetchPage()
     },
   })
 
   const handleClearAll = () => {
-    window.confirm('Are you sure to clear all deleted pages?') && runClearDeletedPage()
+    window.confirm(t('clear-confirm')) && runClearDeletedPage()
   }
 
   useEffect(() => {
@@ -38,7 +40,7 @@ function Trash() {
     <div className="px-2">
       <div className="m-2 flex justify-end">
         <Button variant="destructive" onClick={handleClearAll}>
-          Clear All
+          {t('clear-all')}
         </Button>
       </div>
       <EmptyWrapper empty={data?.length === 0}>

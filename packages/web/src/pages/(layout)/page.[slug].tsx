@@ -2,6 +2,7 @@ import { Button } from '@web-archive/shared/components/button'
 import { useRequest } from 'ahooks'
 import { ArrowLeft, Trash } from 'lucide-react'
 import { useContext, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import IframePageContent from '~/components/iframe-page-content'
 import LoadingWrapper from '~/components/loading-wrapper'
 import ReadabilityPageContent from '~/components/readability-page-content'
@@ -25,6 +26,7 @@ async function getPageContent(pageId: string | undefined) {
 }
 
 function ArchivePage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { slug } = useParams('/page/:slug')
 
@@ -73,7 +75,7 @@ function ArchivePage() {
     },
   )
   const handleDeletePage = async () => {
-    if (!window.confirm('Are you sure you want to delete this page?'))
+    if (!window.confirm(t('delete-this-page-confirm')))
       return
     if (!pageDetail)
       return
@@ -98,7 +100,7 @@ function ArchivePage() {
               variant="default"
               size="sm"
             >
-              Download
+              {t('download')}
             </Button>
           </a>
 
@@ -107,7 +109,7 @@ function ArchivePage() {
             size="sm"
             onClick={() => setReadMode(!readMode)}
           >
-            {readMode ? 'open Iframe mode' : 'open Read mode'}
+            {readMode ? t('open-iframe-mode') : t('open-read-mode')}
           </Button>
           <Button
             variant="destructive"

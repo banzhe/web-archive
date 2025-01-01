@@ -1,3 +1,4 @@
+import { isNotNil } from '@web-archive/shared/utils'
 import { Hono } from 'hono'
 import { validator } from 'hono/validator'
 import type { HonoTypeUserInformation } from '~/constants/binding'
@@ -28,7 +29,7 @@ app.post(
     const pages = await queryShowcase(c.env.DB, { pageNumber, pageSize })
 
     pages.list = await Promise.all(pages.list.map(async (page) => {
-      const screenshot = await getBase64FileFromBucket(c.env.BUCKET, page.screenshotId, 'image/png')
+      const screenshot = isNotNil(page.screenshotId) && await getBase64FileFromBucket(c.env.BUCKET, page.screenshotId, 'image/png')
       return {
         ...page,
         screenshot,

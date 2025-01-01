@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react'
 import { isNumberString } from '@web-archive/shared/utils'
 import { useLocation } from 'react-router-dom'
 import { ScrollArea } from '@web-archive/shared/components/scroll-area'
+import { useTranslation } from 'react-i18next'
 import SettingDialog from './setting-dialog'
 import SidebarFolderMenu from './side-bar-folder-menu'
 import SidebarTagMenu from './side-bar-tag-menu'
-import { useNavigate, useParams } from '~/router'
+import { Link, useNavigate, useParams } from '~/router'
 
 interface SidebarProps {
   selectedTag: number | null
@@ -15,19 +16,17 @@ interface SidebarProps {
 }
 
 function Component({ selectedTag, setSelectedTag }: SidebarProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   const [openedFolder, setOpenedFolder] = useState<number | null>(null)
-  useEffect(() => {
-    if (openedFolder !== null) {
-      navigate('/folder/:slug', { params: { slug: openedFolder.toString() } })
-    }
-  }, [openedFolder])
   const { slug } = useParams('/folder/:slug')
   const { pathname } = useLocation()
   useEffect(() => {
     if (pathname.startsWith('/folder/') && isNumberString(slug))
       setOpenedFolder(Number(slug))
+    else
+      setOpenedFolder(null)
   }, [slug, pathname])
 
   const handleLogout = () => {
@@ -58,15 +57,14 @@ function Component({ selectedTag, setSelectedTag }: SidebarProps) {
           <SidebarMenu>
             <SidebarMenuButton
               className="w-full justify-between"
-              onClick={() => {
-                setOpenedFolder(null)
-                navigate('/')
-              }}
+              asChild
             >
-              <div className="flex items-center">
-                <HomeIcon className="mr-2 h-4 w-4" />
-                Home
-              </div>
+              <Link to="/">
+                <div className="flex items-center">
+                  <HomeIcon className="mr-2 h-4 w-4" />
+                  {t('home')}
+                </div>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenu>
           <SidebarFolderMenu
@@ -85,13 +83,11 @@ function Component({ selectedTag, setSelectedTag }: SidebarProps) {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={() => {
-              setOpenedFolder(null)
-              navigate('/showcase/folder')
-            }}
-            >
-              <SquareLibrary className="mr-2 h-4 w-4" />
-              Showcase
+            <SidebarMenuButton asChild>
+              <Link to="/showcase/folder">
+                <SquareLibrary className="mr-2 h-4 w-4" />
+                Showcase
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
@@ -100,17 +96,15 @@ function Component({ selectedTag, setSelectedTag }: SidebarProps) {
             }}
             >
               <Settings className="mr-2 h-4 w-4" />
-              Settings
+              {t('settings')}
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={() => {
-              setOpenedFolder(null)
-              navigate('/trash')
-            }}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Trash
+            <SidebarMenuButton asChild>
+              <Link to="/trash">
+                <Trash2 className="mr-2 h-4 w-4" />
+                {t('trash')}
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
@@ -120,7 +114,7 @@ function Component({ selectedTag, setSelectedTag }: SidebarProps) {
             }}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              Logout
+              {t('logout')}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

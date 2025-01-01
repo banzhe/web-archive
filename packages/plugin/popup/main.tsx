@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client'
 import { ThemeProvider } from '@web-archive/shared/components/theme-provider'
 import PopupContainer from './PopupPage'
 import '@web-archive/shared/global.css'
+import '~/i18n'
 
 const root = document.getElementById('root')
 if (!root) {

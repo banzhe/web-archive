@@ -11,28 +11,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
 import AutoCompleteTagInput from '@web-archive/shared/components/auto-complete-tag-input'
+import { useTranslation } from 'react-i18next'
 import LoadingWrapper from './loading-wrapper'
 import AITagTestConnectionButton from './ai-tag-test-connection-button'
 import { getAITagConfig, setAITagConfig } from '~/data/config'
 import TagContext from '~/store/tag'
 
 function AITagSettingCollapsible() {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
 
   const formSchema = z.discriminatedUnion('type', [
     z.object({
       type: z.literal('cloudflare'),
       tagLanguage: z.enum(['en', 'zh']),
-      model: z.string().min(1, { message: 'Model name is required' }),
+      model: z.string().min(1, { message: t('model-name-is-required') }),
       preferredTags: z.array(z.string()),
     }),
     z.object({
       type: z.literal('openai'),
       tagLanguage: z.enum(['en', 'zh']),
-      model: z.string().min(1, { message: 'Model name is required' }),
+      model: z.string().min(1, { message: t('model-name-is-required') }),
       preferredTags: z.array(z.string()),
-      apiUrl: z.string().url({ message: 'Please enter a valid API URL' }),
-      apiKey: z.string().min(1, { message: 'API Key is required' }),
+      apiUrl: z.string().url({ message: t('please-enter-a-valid-api-url') }),
+      apiKey: z.string().min(1, { message: t('api-key-is-required') }),
     }),
   ])
 
@@ -60,7 +62,7 @@ function AITagSettingCollapsible() {
   const { run: setAITagConfigRun, loading: saveConfigLoading } = useRequest(setAITagConfig, {
     manual: true,
     onSuccess: () => {
-      toast.success('AI Tag config saved')
+      toast.success(t('ai-tag-config-saved'))
     },
     onError: (error) => {
       toast.error(error.message)
@@ -84,7 +86,7 @@ function AITagSettingCollapsible() {
           className="w-full text-lg font-bold flex border-none justify-between items-center cursor-pointer"
         >
           <div>
-            AI Tag
+            {t('ai-tag')}
           </div>
           <div>
             <ChevronDown size={24} className={`transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
@@ -99,7 +101,7 @@ function AITagSettingCollapsible() {
               className="space-y-4 p-2"
             >
               <FormDescription>
-                Use page title and description to generate tags. You can also set preferred tags to be included in the generated tags.
+                {t('aiTag-desc')}
               </FormDescription>
 
               <FormField
@@ -107,11 +109,11 @@ function AITagSettingCollapsible() {
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Service Type</FormLabel>
+                    <FormLabel>{t('aiTag-service-type')}</FormLabel>
                     <FormControl>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select Service Type"></SelectValue>
+                          <SelectValue placeholder={t('select-service-type')}></SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="cloudflare">Cloudflare</SelectItem>
@@ -120,10 +122,9 @@ function AITagSettingCollapsible() {
                       </Select>
                     </FormControl>
                     <FormDescription>
-                      Cloudflare has a free tier, see
-                      {' '}
+                      {t('aiTag-cloudflare-desc')}
                       <a className="font-bold underline" href="https://developers.cloudflare.com/workers-ai/platform/pricing/">
-                        Workers AI Pricing
+                        {t('aiTag-cloudflare-pricing')}
                       </a>
                       .
                     </FormDescription>
@@ -136,15 +137,17 @@ function AITagSettingCollapsible() {
                 name="tagLanguage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Generate Tag Language</FormLabel>
+                    <FormLabel>
+                      {t('aiTag-generate-tag-language')}
+                    </FormLabel>
                     <FormControl>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select Generate Tag Language"></SelectValue>
+                          <SelectValue placeholder={t('select-generate-tag-language')}></SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="en">English</SelectItem>
-                          <SelectItem value="zh">Chinese</SelectItem>
+                          <SelectItem value="zh">简体中文</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>
@@ -192,7 +195,7 @@ function AITagSettingCollapsible() {
                 name="model"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Model</FormLabel>
+                    <FormLabel>{t('model')}</FormLabel>
                     <FormControl>
                       <Input
                         placeholder={form.watch('type') === 'cloudflare'
@@ -204,8 +207,7 @@ function AITagSettingCollapsible() {
                     {
                       form.watch('type') === 'cloudflare' && (
                         <FormDescription>
-                          The model name can be found in the model detail page. Such as
-                          {' '}
+                          {t('aitag-model-desc')}
                           <a className="font-bold underline" href="https://developers.cloudflare.com/workers-ai/models/mistral-7b-instruct-v0.1/">mistral-7b-instruct-v0.1</a>
                           .
                         </FormDescription>
@@ -221,7 +223,7 @@ function AITagSettingCollapsible() {
                 name="preferredTags"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Preferred Tags</FormLabel>
+                    <FormLabel>{t('preferred-tags')}</FormLabel>
                     <FormControl>
                       <AutoCompleteTagInput
                         tags={tagCache ?? []}
@@ -243,7 +245,7 @@ function AITagSettingCollapsible() {
                   disabled={saveConfigLoading}
                   type="submit"
                 >
-                  Save
+                  {t('save')}
                 </Button>
                 <AITagTestConnectionButton
                   config={form.getValues()}

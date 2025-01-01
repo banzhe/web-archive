@@ -1,14 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@web-archive/shared/components/card'
 import { memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import ChartCardSkeleton from './common/chart-card-skeleton'
 
 const R2UsageCard = memo(({ loading, data }: { loading: boolean, data?: { count: number, size: number } }) => {
+  const { t } = useTranslation()
   return loading
     ? <ChartCardSkeleton />
     : (
       <Card>
         <CardHeader>
-          <CardTitle>R2 Usage</CardTitle>
+          <CardTitle>{t('r2-usage')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-sm text-muted-foreground">

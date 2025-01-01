@@ -1,6 +1,5 @@
 import { Button } from '@web-archive/shared/components/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@web-archive/shared/components/collapsible'
-import Folder from '@web-archive/shared/components/folder'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub } from '@web-archive/shared/components/side-bar'
 import { Skeleton } from '@web-archive/shared/components/skeleton'
 import { cn, isNil } from '@web-archive/shared/utils'
@@ -9,11 +8,13 @@ import { useState } from 'react'
 import type { Folder as FolderType } from '@web-archive/shared/types'
 import { useRequest } from 'ahooks'
 import toast from 'react-hot-toast'
+import { useTranslation } from 'react-i18next'
 import NewFolderDialog from './new-folder-dialog'
 import EditFolderDialog from './edit-folder-dialog'
+import Folder from './folder'
 import { deleteFolder, getAllFolder } from '~/data/folder'
 import emitter from '~/utils/emitter'
-import { useNavigate } from '~/router'
+import { Link, useNavigate } from '~/router'
 
 function getNextFolderId(folders: Array<FolderType>, index: number) {
   if (index === 0 && folders.length === 1) {
@@ -32,19 +33,17 @@ interface SidebarFolderCollapseProps {
 }
 
 function SidebarFolderMenu({ openedFolder, setOpenedFolder, className }: SidebarFolderCollapseProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   const [isFoldersCollapseOpen, setIsFoldersCollapseOpen] = useState(true)
 
   const { data: folders, refresh, mutate: setFolders, loading: foldersLoading } = useRequest(getAllFolder)
 
-  const handleFolderClick = (id: number) => {
-    setOpenedFolder(id)
-  }
   emitter.on('refreshSideBar', refresh)
 
   const handleDeleteFolder = async (folderId: number) => {
-    if (isNil(folders) || !confirm('Are you sure you want to delete this folder?'))
+    if (isNil(folders) || !confirm(t('are-you-sure-you-want-to-delete-this-folder')))
       return
 
     try {
@@ -56,10 +55,10 @@ function SidebarFolderMenu({ openedFolder, setOpenedFolder, className }: Sidebar
         setOpenedFolder(nextFolderId)
       else
         navigate('/')
-      toast.success('Folder deleted successfully')
+      toast.success(t('folder-deleted-successfully'))
     }
     catch (error) {
-      toast.error('Failed to delete folder')
+      toast.error(t('failed-to-delete-folder'))
     }
   }
 
@@ -88,7 +87,7 @@ function SidebarFolderMenu({ openedFolder, setOpenedFolder, className }: Sidebar
           <SidebarMenuButton className="w-full justify-between">
             <div className="flex items-center">
               <FolderIcon className="mr-2 h-4 w-4" />
-              Folders
+              {t('folders')}
             </div>
             <ChevronDown className={cn('h-4 w-4 transition-transform', isFoldersCollapseOpen && 'rotate-180')} />
           </SidebarMenuButton>
@@ -106,23 +105,26 @@ function SidebarFolderMenu({ openedFolder, setOpenedFolder, className }: Sidebar
               : (
                   folders?.map(folder => (
                     <SidebarMenuItem key={folder.id}>
-                      <SidebarMenuButton>
-                        <Folder
-                          name={folder.name}
-                          id={folder.id}
-                          isOpen={openedFolder === folder.id}
-                          onClick={handleFolderClick}
-                          onDelete={handleDeleteFolder}
-                          onEdit={handleEditFolder}
-                        />
-                      </SidebarMenuButton>
+                      <Link to="/folder/:slug" params={{ slug: folder.id.toString() }}>
+                        <SidebarMenuButton>
+                          <Folder
+                            name={folder.name}
+                            id={folder.id}
+                            isOpen={openedFolder === folder.id}
+                            onDelete={handleDeleteFolder}
+                            onEdit={handleEditFolder}
+                          />
+
+                        </SidebarMenuButton>
+                      </Link>
+
                     </SidebarMenuItem>
                   ))
                 )}
             <SidebarMenuItem>
               <Button variant="ghost" className="w-full justify-start" onClick={() => setNewFolderDialogOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Folder
+                {t('add-folder')}
               </Button>
             </SidebarMenuItem>
           </SidebarMenuSub>
