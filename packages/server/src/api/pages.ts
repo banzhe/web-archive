@@ -371,6 +371,10 @@ app.get(
     c.res.headers.set('Content-Type', 'image/webp')
     c.res.headers.set('cache-control', 'private, max-age=31536000')
 
+    if (isNil(screenshot)) {
+      return c.body(null)
+    }
+
     return c.body(await screenshot.arrayBuffer())
   },
 )

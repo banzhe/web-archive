@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { isNumberString } from '@web-archive/shared/utils'
 import { useLocation } from 'react-router-dom'
 import { ScrollArea } from '@web-archive/shared/components/scroll-area'
+import { useTranslation } from 'react-i18next'
 import SettingDialog from './setting-dialog'
 import SidebarFolderMenu from './side-bar-folder-menu'
 import SidebarTagMenu from './side-bar-tag-menu'
@@ -15,6 +16,7 @@ interface SidebarProps {
 }
 
 function Component({ selectedTag, setSelectedTag }: SidebarProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   const [openedFolder, setOpenedFolder] = useState<number | null>(null)
@@ -60,7 +62,7 @@ function Component({ selectedTag, setSelectedTag }: SidebarProps) {
               <Link to="/">
                 <div className="flex items-center">
                   <HomeIcon className="mr-2 h-4 w-4" />
-                  Home
+                  {t('home')}
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -94,14 +96,14 @@ function Component({ selectedTag, setSelectedTag }: SidebarProps) {
             }}
             >
               <Settings className="mr-2 h-4 w-4" />
-              Settings
+              {t('settings')}
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link to="/trash">
                 <Trash2 className="mr-2 h-4 w-4" />
-                Trash
+                {t('trash')}
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -112,7 +114,7 @@ function Component({ selectedTag, setSelectedTag }: SidebarProps) {
             }}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              Logout
+              {t('logout')}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

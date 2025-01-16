@@ -4,6 +4,7 @@ import { History, House, LogOut, Settings, SquareLibrary } from 'lucide-react'
 import { sendMessage } from 'webext-bridge/popup'
 import { isNil } from '@web-archive/shared/utils'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@web-archive/shared/components/tooltip'
+import { useTranslation } from 'react-i18next'
 import { getCurrentTab } from '../utils/tab'
 import { ThemeToggle } from '~/popup/components/ThemeToggle'
 import type { PageType } from '~/popup/PopupPage'
@@ -13,6 +14,7 @@ interface PluginHomePageProps {
 }
 
 function PluginHomePage({ setActivePage }: PluginHomePageProps) {
+  const { t } = useTranslation()
   async function logout() {
     await sendMessage('logout', {})
     setActivePage('login')
@@ -51,7 +53,7 @@ function PluginHomePage({ setActivePage }: PluginHomePageProps) {
                 </House>
               </TooltipTrigger>
               <TooltipContent>
-                <div className="text-sm">Open Home Page</div>
+                <div className="text-sm">{t('open-home-page')}</div>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -63,7 +65,7 @@ function PluginHomePage({ setActivePage }: PluginHomePageProps) {
                 </SquareLibrary>
               </TooltipTrigger>
               <TooltipContent>
-                <div className="text-sm">Open Showcase Page</div>
+                <div className="text-sm">{t('open-showcase-page')}</div>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -71,7 +73,7 @@ function PluginHomePage({ setActivePage }: PluginHomePageProps) {
                 <ThemeToggle></ThemeToggle>
               </TooltipTrigger>
               <TooltipContent>
-                <div className="text-sm">Toggle Theme</div>
+                <div className="text-sm">{t('toggle-theme')}</div>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -83,7 +85,7 @@ function PluginHomePage({ setActivePage }: PluginHomePageProps) {
                 </Settings>
               </TooltipTrigger>
               <TooltipContent>
-                <div className="text-sm">Change Plugin Settings</div>
+                <div className="text-sm">{t('change-plugin-settings')}</div>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -94,7 +96,7 @@ function PluginHomePage({ setActivePage }: PluginHomePageProps) {
                 />
               </TooltipTrigger>
               <TooltipContent>
-                <div className="text-sm">View Save History</div>
+                <div className="text-sm">{t('view-save-history')}</div>
               </TooltipContent>
             </Tooltip>
 
@@ -108,7 +110,7 @@ function PluginHomePage({ setActivePage }: PluginHomePageProps) {
               />
             </TooltipTrigger>
             <TooltipContent>
-              <div className="text-sm">Logout</div>
+              <div className="text-sm">{t('logout')}</div>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -119,7 +121,7 @@ function PluginHomePage({ setActivePage }: PluginHomePageProps) {
         onClick={() => { setActivePage('upload') }}
       >
         {
-          !saveAvailabel ? 'Save Page (Not Available)' : 'Save Page'
+          !saveAvailabel ? t('save-page-not-available') : t('save-page')
         }
       </Button>
     </div>

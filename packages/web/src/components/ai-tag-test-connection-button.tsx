@@ -6,6 +6,7 @@ import { generateTagByOpenAI } from '@web-archive/shared/utils'
 import { useRequest } from 'ahooks'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@web-archive/shared/components/tooltip'
 import type { AITagConfig } from '@web-archive/shared/types'
+import { useTranslation } from 'react-i18next'
 import { generateTag } from '~/data/tag'
 
 interface Props {
@@ -21,6 +22,7 @@ async function generateTagByConfig(config: GenerateTagProps) {
 }
 
 function AITagTestConnectionButton({ config, onValidate }: Props) {
+  const { t } = useTranslation()
   const [status, setStatus] = useState<'untested' | 'success' | 'error'>('untested')
   const [error, setError] = useState<string | null>()
 
@@ -62,26 +64,26 @@ function AITagTestConnectionButton({ config, onValidate }: Props) {
               ? (
                 <>
                   <Loader2 className="animate-spin"></Loader2>
-                  Testing...
+                  {t('testing')}
                 </>
                 )
               : (
                 <>
                   {status === 'untested' && (
                     <>
-                      Test Connection
+                      {t('test-connection')}
                     </>
                   )}
                   {status === 'success' && (
                     <>
                       <Check className="w-4 h-4 text-primary" />
-                      Successed
+                      {t('successed')}
                     </>
                   )}
                   {status === 'error' && (
                     <>
                       <AlertCircle className="w-4 h-4 text-destructive" />
-                      Failed
+                      {t('failed')}
                     </>
                   )}
                 </>

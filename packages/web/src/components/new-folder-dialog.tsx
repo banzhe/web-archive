@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import toast from 'react-hot-toast'
 import { useRequest } from 'ahooks'
+import { useTranslation } from 'react-i18next'
 import { createFolder } from '~/data/folder'
 
 interface NewFolderProps {
@@ -14,6 +15,7 @@ interface NewFolderProps {
 }
 
 function NewFolderDialog({ afterSubmit, open, setOpen }: NewFolderProps) {
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const { run } = useRequest(
     createFolder,
@@ -31,7 +33,7 @@ function NewFolderDialog({ afterSubmit, open, setOpen }: NewFolderProps) {
   )
   const handleSubmit = () => {
     if (name.length === 0) {
-      toast.error('Folder name is required')
+      toast.error(t('folder-name-is-required'))
       return
     }
     run(name)
@@ -39,15 +41,15 @@ function NewFolderDialog({ afterSubmit, open, setOpen }: NewFolderProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
-        <DialogTitle>Create New Folder</DialogTitle>
+        <DialogTitle>{t('create-new-folder-web')}</DialogTitle>
         <DialogDescription></DialogDescription>
         <Input
           value={name}
           onChange={e => setName(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          placeholder="Folder Name"
+          placeholder={t('folder-name')}
         />
-        <Button onClick={handleSubmit}>Create</Button>
+        <Button onClick={handleSubmit}>{t('create-web')}</Button>
       </DialogContent>
     </Dialog>
   )

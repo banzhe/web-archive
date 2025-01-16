@@ -8,6 +8,7 @@ import { useRequest } from 'ahooks'
 import { ChevronDown, Pencil, TagIcon, Trash } from 'lucide-react'
 import { useContext, useState } from 'react'
 import toast from 'react-hot-toast'
+import { useTranslation } from 'react-i18next'
 import EditTagDialog from './edit-tag-dialog'
 import { deleteTag } from '~/data/tag'
 import TagContext from '~/store/tag'
@@ -26,6 +27,7 @@ interface TagBadgeProps {
 }
 
 function TagBadge({ tag, isSelected, onClick, onDelete, onEdit }: TagBadgeProps) {
+  const { t } = useTranslation()
   const labelText = `${tag.name} (${tag.pageIds.length})`
   return (
     <ContextMenu>
@@ -45,14 +47,14 @@ function TagBadge({ tag, isSelected, onClick, onDelete, onEdit }: TagBadgeProps)
           onClick={onEdit}
         >
           <Pencil size={12} />
-          <div>Edit</div>
+          <div>{t('edit')}</div>
         </ContextMenuItem>
         <ContextMenuItem
           className="flex items-center space-x-2 cursor-pointer"
           onClick={onDelete}
         >
           <Trash size={12} />
-          <div>Delete</div>
+          <div>{t('delete')}</div>
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
@@ -60,6 +62,7 @@ function TagBadge({ tag, isSelected, onClick, onDelete, onEdit }: TagBadgeProps)
 }
 
 function SidebarTagMenu({ selectedTag, setSelectedTag }: SidebarTagMenuProps) {
+  const { t } = useTranslation()
   const { tagCache: tags, refreshTagCache } = useContext(TagContext)
   const [isTagsCollapseOpen, setIsTagsCollapseOpen] = useState(false)
 
@@ -100,7 +103,7 @@ function SidebarTagMenu({ selectedTag, setSelectedTag }: SidebarTagMenuProps) {
           <SidebarMenuButton className="w-full justify-between">
             <div className="flex items-center">
               <TagIcon className="mr-2 h-4 w-4"></TagIcon>
-              Tags
+              {t('tags')}
             </div>
             <ChevronDown className={cn('h-4 w-4 transition-transform', isTagsCollapseOpen && 'rotate-180')} />
           </SidebarMenuButton>

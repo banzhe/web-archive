@@ -88,5 +88,11 @@
         "chunks/*"
       ]
     }
-  ]
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{bafa7bca-e0ab-44f2-a343-4a6b7b52ba24}",
+      "strict_min_version": "109.0"
+    }
+  }
 }

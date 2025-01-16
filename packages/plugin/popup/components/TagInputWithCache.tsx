@@ -9,6 +9,7 @@ import { AlertCircleIcon, Loader2Icon, SparklesIcon } from 'lucide-react'
 import { sendMessage } from 'webext-bridge/popup'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@web-archive/shared/components/tooltip'
 import toast from 'react-hot-toast'
+import { useTranslation } from 'react-i18next'
 
 async function getAllTags() {
   const { tags } = await sendMessage('get-all-tags', {})
@@ -20,9 +21,9 @@ async function getAITagConfig() {
   return aiTagConfig
 }
 
-async function doGenerateTag(props: GenerateTagProps) {
+async function doGenerateTag(props: GenerateTagProps, errorMessage: string) {
   if (!props.model) {
-    toast.error('Please configure in website settings first')
+    toast.error(errorMessage)
     throw new Error('Invalid AI tag config')
   }
   if (props.type === 'cloudflare') {
@@ -39,6 +40,7 @@ interface TagInputWithCacheProps {
 }
 
 function TagInputWithCache({ onValueChange, title, description }: TagInputWithCacheProps) {
+  const { t } = useTranslation()
   const tagInputRef = useRef<AutoCompleteTagInputRef>(null)
   const { data: tagList } = useRequest(getAllTags, {
     cacheKey: 'tagList',
@@ -100,7 +102,7 @@ function TagInputWithCache({ onValueChange, title, description }: TagInputWithCa
                   ...aiTagConfig,
                   title,
                   pageDesc: description,
-                })
+                }, t('ai-tag-not-configured'))
               }}
             >
               {

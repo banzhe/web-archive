@@ -5,16 +5,18 @@ import { Input } from '@web-archive/shared/components/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@web-archive/shared/components/card'
 import toast, { Toaster } from 'react-hot-toast'
 import { Eye, EyeOff } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import router from '~/utils/router'
 
 export default function LoginPage() {
+  const { t } = useTranslation()
   const [key, setKey] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const handleLogin = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (key.length < 8) {
-      toast.error('Password must be at least 8 characters')
+      toast.error(t('password-must-be-at-least-8-characters'))
       return
     }
     setLoading(true)
@@ -31,14 +33,14 @@ export default function LoginPage() {
           return
         }
         if (res.status === 201) {
-          toast.success('Admin password set, please use it login again')
+          toast.success(t('password-set-success-toast'))
           return
         }
         const json = await res.json()
         toast.error(json.error)
       })
       .catch(() => {
-        toast.error('Something went wrong')
+        toast.error(t('something-went-wrong'))
       })
       .finally(() => {
         setLoading(false)
@@ -54,7 +56,7 @@ export default function LoginPage() {
       <Card className="w-[450px]">
         <CardHeader>
           <CardTitle>Web Archive</CardTitle>
-          <CardDescription>Please enter your key to login</CardDescription>
+          <CardDescription>{t('please-enter-your-key-to-login')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin}>
@@ -62,7 +64,7 @@ export default function LoginPage() {
               <div className="relative">
                 <Input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password, at least 8 characters"
+                  placeholder={t('enter-your-password-at-least-8-characters')}
                   value={key}
                   onChange={e => setKey(e.target.value)}
                 />
@@ -77,7 +79,7 @@ export default function LoginPage() {
                 </Button>
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Logging in...' : 'Login'}
+                {loading ? t('logging-in') : t('login')}
               </Button>
             </div>
           </form>
