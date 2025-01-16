@@ -90,6 +90,12 @@ async function queryPage(DB: D1Database, options: { folderId?: number, pageNumbe
   return sqlResult.results
 }
 
+async function queryPageByUrl(DB: D1Database, pageUrl: string) {
+  const sql = `SELECT * FROM pages WHERE pageUrl = ? AND isDeleted = 0`
+  const result = await DB.prepare(sql).bind(pageUrl).all<Page>()
+  return result.results
+}
+
 async function selectDeletedPageTotalCount(DB: D1Database) {
   const sql = `
     SELECT COUNT(*) as count FROM pages
@@ -240,6 +246,7 @@ async function updatePage(DB: D1Database, options: UpdatePageOptions) {
 export {
   selectPageTotalCount,
   queryPage,
+  queryPageByUrl,
   selectDeletedPageTotalCount,
   queryDeletedPage,
   deletePageById,

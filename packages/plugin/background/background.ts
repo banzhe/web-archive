@@ -206,3 +206,16 @@ onMessage('generate-tag', async ({ data: { title, pageDesc, tagLanguage, preferr
     tags,
   }
 })
+
+onMessage('query-by-url', async ({ data: { pageUrl } }) => {
+  const pages = await request('/pages/query_by_url', {
+    method: 'POST',
+    body: JSON.stringify({ pageUrl }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  return {
+    pages,
+  }
+})

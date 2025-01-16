@@ -52,5 +52,7 @@
   "open-showcase-page": "打开 Showcase 页面",
   "open-home-page": "打开首页",
   "save-page-not-available": "保存页面（不可用）",
-  "language": "语言: "
+  "language": "语言: ",
+  "loading-archived-list": "加载已存档列表中",
+  "no-archived-pages": "没有存档页面"
 }

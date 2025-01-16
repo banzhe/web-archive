@@ -6,6 +6,7 @@ import { isNil } from '@web-archive/shared/utils'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@web-archive/shared/components/tooltip'
 import { useTranslation } from 'react-i18next'
 import { getCurrentTab } from '../utils/tab'
+import SavedPageList from './SavedPageList'
 import { ThemeToggle } from '~/popup/components/ThemeToggle'
 import type { PageType } from '~/popup/PopupPage'
 
@@ -124,6 +125,13 @@ function PluginHomePage({ setActivePage }: PluginHomePageProps) {
           !saveAvailabel ? t('save-page-not-available') : t('save-page')
         }
       </Button>
+      {
+        saveAvailabel && (
+          <SavedPageList>
+          </SavedPageList>
+        )
+      }
+
     </div>
   )
 }

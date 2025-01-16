@@ -52,5 +52,7 @@
   "open-showcase-page": "Open Showcase Page",
   "open-home-page": "Open Home Page",
   "save-page-not-available": "Save Page (Not Available)",
-  "language": "Language:"
+  "language": "Language:",
+  "loading-archived-list": "Loading Archived List",
+  "no-archived-pages": "No Archived Pages"
 }
