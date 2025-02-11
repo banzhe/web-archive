@@ -105,6 +105,15 @@ function getRecentSavePage(): Promise<Page[]> {
   })
 }
 
+function queryAllPageIds(folderId: number): Promise<number[]> {
+  return fetcher<number[]>('/pages/query_all_page_ids', {
+    method: 'POST',
+    body: {
+      folderId,
+    },
+  })
+}
+
 export {
   getPageDetail,
   deletePage,
@@ -116,4 +125,5 @@ export {
   updatePageShowcase,
   getPageScreenshot,
   getRecentSavePage,
+  queryAllPageIds,
 }

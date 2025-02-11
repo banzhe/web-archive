@@ -74,6 +74,7 @@ function Component({ selectedTag, setSelectedTag }: SidebarProps) {
           <SidebarTagMenu
             selectedTag={selectedTag}
             setSelectedTag={setSelectedTag}
+            selectedFolder={openedFolder}
           >
           </SidebarTagMenu>
         </ScrollArea>

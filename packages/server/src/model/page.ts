@@ -237,6 +237,14 @@ async function updatePage(DB: D1Database, options: UpdatePageOptions) {
   return result.every(r => r.success)
 }
 
+async function queryAllPageIds(DB: D1Database, folderId: number) {
+  const sql = `
+    SELECT id FROM pages WHERE folderId = ? AND isDeleted = 0
+  `
+  const result = await DB.prepare(sql).bind(folderId).all()
+  return result.results.map(r => r.id)
+}
+
 export {
   selectPageTotalCount,
   queryPage,
@@ -250,4 +258,5 @@ export {
   queryRecentSavePage,
   selectAllPageCount,
   updatePage,
+  queryAllPageIds,
 }
