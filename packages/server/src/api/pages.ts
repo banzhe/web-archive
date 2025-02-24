@@ -132,6 +132,30 @@ app.post(
 )
 
 app.post(
+  '/query_all_page_ids',
+  validator('json', (value, c) => {
+    const schema = z.object({
+      folderId: z.number({
+        message: 'Folder ID should be a number',
+      }),
+    })
+
+    const parsed = schema.safeParse(value)
+    if (!parsed.success) {
+      return c.json(result.error(400, parsed.error.errors[0].message))
+    }
+
+    return parsed.data
+  }),
+  async (c) => {
+    const { folderId } = c.req.valid('json')
+    const pages = await queryAllPageIds(c.env.DB, folderId)
+
+    return c.json(result.success(pages))
+  },
+)
+
+app.post(
   '/query_by_url',
   validator('json', (value, c) => {
     const errorMsg = {

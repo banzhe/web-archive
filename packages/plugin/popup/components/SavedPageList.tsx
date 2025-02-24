@@ -61,7 +61,7 @@ function SavedPageList() {
                 className="flex justify-between bg-primary/20 rounded p-2 select-none cursor-pointer"
                 onClick={() => handlePageClick(page.id)}
               >
-                <div className="flex-1">{page.title}</div>
+                <div className="flex-1 text-nowrap text-ellipsis overflow-hidden">{page.title}</div>
                 <div>{formatTime(page.createdAt)}</div>
               </div>
             )
