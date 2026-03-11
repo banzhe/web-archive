@@ -50,8 +50,6 @@ Secrets 配置页面如下：
 部署完成后，可以在 Cloudflare Workers 页面中找到服务的访问链接。访问时请使用不带 hash 的正式链接，不要复制带随机 hash 的预览链接。
 ![Cloudflare Workers 页面中的访问链接位置](./imgs/cloudflare_workers_page.png)
 
-图：Cloudflare Workers 页面中访问链接位置示意。
-
 ## 命令部署
 
 要求本地已安装 Node 环境。
