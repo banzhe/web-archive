@@ -1,10 +1,21 @@
 import Browser from 'webextension-polyfill'
-import '~/lib/browser-polyfill.min.js'
-import '~/lib/single-file-background.js'
 import { onMessage } from 'webext-bridge/background'
 import { isNotNil } from '@web-archive/shared/utils'
 import { clearFinishedTaskList, createAndRunTask, getTaskList } from './processor'
 import { checkLoginStatus, getCacheLoginStatus, resetLoginStatus } from './login'
+
+let backgroundRuntimePromise: Promise<unknown> | undefined
+
+export function ensureBackgroundRuntime() {
+  backgroundRuntimePromise ??= (async () => {
+    // @ts-expect-error need fix
+    await import('~/lib/browser-polyfill.min.js')
+    // @ts-expect-error need fix
+    await import('~/lib/single-file-background.js')
+  })()
+
+  return backgroundRuntimePromise
+}
 
 Browser.runtime.onInstalled.addListener(async () => {
   const tags = await Browser.tabs.query({})
@@ -17,7 +28,7 @@ Browser.runtime.onInstalled.addListener(async () => {
         console.log('inject content when installed', tag.title)
         await Browser.scripting.executeScript({
           target: { tabId: tag.id! },
-          files: ['lib/browser-polyfill.min.js', 'contentScripts/main.js'],
+          files: ['content-scripts/content.js'],
         })
       }
       catch (e) {

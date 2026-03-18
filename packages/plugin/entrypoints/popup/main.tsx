@@ -2,9 +2,9 @@ import '~/styles'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { ThemeProvider } from '@web-archive/shared/components/theme-provider'
-import PopupContainer from './PopupPage'
 import '@web-archive/shared/global.css'
 import '~/i18n'
+import PopupContainer from '~/popup/PopupPage'
 
 const root = document.getElementById('root')
 if (!root) {
@@ -14,7 +14,7 @@ if (!root) {
 ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <PopupContainer></PopupContainer>
+      <PopupContainer />
     </ThemeProvider>
   </React.StrictMode>,
 )

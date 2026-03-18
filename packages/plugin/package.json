@@ -9,19 +9,24 @@
   "keywords": [],
   "main": "index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build --config vite.production.config.ts",
-    "build:firefox": "vite build --config vite.production.config.ts -- --firefox",
+    "dev": "wxt",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "postinstall": "wxt prepare",
+    "pw:plugin:install-browser": "node --experimental-strip-types ./scripts/install-playwright-plugin-browser.ts",
+    "pw:plugin": "node --experimental-strip-types ./scripts/open-playwright-plugin.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "compressorjs": "^1.2.1"
   },
   "devDependencies": {
-    "@crxjs/vite-plugin": "2.0.0-beta.26",
     "@types/webextension-polyfill": "^0.10.7",
     "@web-archive/shared": "workspace:*",
+    "@wxt-dev/module-react": "1.1.5",
+    "typescript": "^5.9.3",
     "webext-bridge": "^6.0.1",
-    "webextension-polyfill": "^0.12.0"
+    "webextension-polyfill": "^0.12.0",
+    "wxt": "0.20.18"
   }
 }

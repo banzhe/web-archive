@@ -1,4 +1,5 @@
 {
+  "extends": "./.wxt/tsconfig.json",
   "compilerOptions": {
     "target": "ESNext",
     "jsx": "react-jsx",
@@ -11,11 +12,6 @@
     "baseUrl": "./",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "paths": {
-      "~/*": [
-        "./*"
-      ]
-    },
     "strict": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true

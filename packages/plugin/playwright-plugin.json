@@ -1,0 +1,14 @@
+{
+  "browser": {
+    "browserName": "chromium",
+    "launchOptions": {
+      "args": [
+        "--disable-features=DisableLoadExtensionCommandLineSwitch,DisableDisableExtensionsExceptCommandLineSwitch",
+        "--disable-extensions-except=../../dist/extension",
+        "--load-extension=../../dist/extension"
+      ]
+    },
+    "userDataDir": ".playwright-cli/profiles/playwright-plugin"
+  },
+  "allowUnrestrictedFileAccess": true
+}

@@ -1,6 +1,6 @@
 import { sendMessage } from 'webext-bridge/background'
 import Browser from 'webextension-polyfill'
-import { request } from './background'
+import { ensureBackgroundRuntime, request } from './background'
 import { keepAlive } from './keepAlive'
 import type { SingleFileSetting } from '~/utils/singleFile'
 import { base64ToBlob } from '~/utils/file'
@@ -86,9 +86,10 @@ type CreateTaskOptions = {
 }
 
 async function scrapePageData(singleFileSetting: SingleFileSetting, tabId: number) {
+  await ensureBackgroundRuntime()
   await Browser.scripting.executeScript({
     target: { tabId },
-    files: ['/lib/single-file.js', '/lib/single-file-extension-core.js'],
+    files: ['lib/single-file.js', 'lib/single-file-extension-core.js'],
   })
   const { content } = await sendMessage('scrape-page-data', singleFileSetting, `content-script@${tabId}`)
   return content

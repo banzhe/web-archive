@@ -34,7 +34,7 @@ onMessage('scrape-page-data', async ({ data: singleFileSetting }) => {
 
   const pageData = await getCurrentPageData({
     ...singleFileSetting,
-    onprogress: (data) => {
+    onprogress: (_data) => {
     },
   })
 
