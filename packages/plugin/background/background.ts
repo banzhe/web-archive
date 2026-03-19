@@ -1,41 +1,48 @@
 import Browser from 'webextension-polyfill'
 import { onMessage } from 'webext-bridge/background'
 import { isNotNil } from '@web-archive/shared/utils'
-import { clearFinishedTaskList, createAndRunTask, getTaskList } from './processor'
+import {
+  clearFinishedTaskList,
+  createAndRunTask,
+  getTaskList,
+  registerProcessorLifecycleHandlers,
+} from './processor'
 import { checkLoginStatus, getCacheLoginStatus, resetLoginStatus } from './login'
 
-let backgroundRuntimePromise: Promise<unknown> | undefined
+let isBackgroundRegistered = false
 
-export function ensureBackgroundRuntime() {
-  backgroundRuntimePromise ??= (async () => {
-    // @ts-expect-error need fix
-    await import('~/lib/browser-polyfill.min.js')
-    // @ts-expect-error need fix
-    await import('~/lib/single-file-background.js')
-  })()
+export function registerBackgroundHandlers() {
+  if (isBackgroundRegistered) {
+    return
+  }
 
-  return backgroundRuntimePromise
+  isBackgroundRegistered = true
+  registerProcessorLifecycleHandlers()
+  registerInstallHandler()
+  registerMessageHandlers()
 }
 
-Browser.runtime.onInstalled.addListener(async () => {
-  const tags = await Browser.tabs.query({})
+function registerInstallHandler() {
+  Browser.runtime.onInstalled.addListener(async () => {
+    const tags = await Browser.tabs.query({})
 
-  // inject content script to all tabs when installed
-  tags
-    .filter(tag => isNotNil(tag.id))
-    .forEach(async (tag) => {
-      try {
-        console.log('inject content when installed', tag.title)
-        await Browser.scripting.executeScript({
-          target: { tabId: tag.id! },
-          files: ['content-scripts/content.js'],
-        })
-      }
-      catch (e) {
-        // ignore inject error
-      }
-    })
-})
+    // inject content script to all tabs when installed
+    tags
+      .filter(tag => isNotNil(tag.id))
+      .forEach(async (tag) => {
+        try {
+          console.log('inject content when installed', tag.title)
+          await Browser.scripting.executeScript({
+            target: { tabId: tag.id! },
+            files: ['content-scripts/content.js'],
+          })
+        }
+        catch (e) {
+          // ignore inject error
+        }
+      })
+  })
+}
 
 async function appendAuthHeader(options?: RequestInit) {
   const { token } = await Browser.storage.local.get('token') ?? {}
@@ -84,149 +91,151 @@ export async function request(url: string, options?: (RequestInit & { timeout?: 
   throw new Error('Failed to fetch')
 }
 
-onMessage('set-server-url', async ({ data: { url } }) => {
-  const serverUrl = url.endsWith('/') ? url.slice(0, -1) : url
-  await Browser.storage.local.set({ serverUrl })
-  return {
-    success: true,
-  }
-})
-onMessage('get-server-url', async () => {
-  const { serverUrl } = await Browser.storage.local.get('serverUrl')
-  return { serverUrl }
-})
-
-onMessage('check-auth', async () => {
-  return {
-    success: await getCacheLoginStatus(),
-  }
-})
-
-onMessage('login', async () => {
-  return {
-    success: await checkLoginStatus(),
-  }
-})
-
-onMessage('logout', async () => {
-  await resetLoginStatus()
-})
-
-onMessage('get-token', async () => {
-  const { token } = await Browser.storage.local.get('token')
-  return { token }
-})
-
-onMessage('set-token', async ({ data: { token } }) => {
-  await Browser.storage.local.set({ token })
-  return { success: true }
-})
-
-onMessage('get-all-folders', async () => {
-  const folders = await request('/folders/all', {
-    method: 'GET',
+function registerMessageHandlers() {
+  onMessage('set-server-url', async ({ data: { url } }) => {
+    const serverUrl = url.endsWith('/') ? url.slice(0, -1) : url
+    await Browser.storage.local.set({ serverUrl })
+    return {
+      success: true,
+    }
   })
-  return {
-    folders,
-  }
-})
+  onMessage('get-server-url', async () => {
+    const { serverUrl } = await Browser.storage.local.get('serverUrl')
+    return { serverUrl }
+  })
 
-onMessage('create-folder', async ({ data: { name } }) => {
-  try {
-    const folder = await request('/folders/create', {
+  onMessage('check-auth', async () => {
+    return {
+      success: await getCacheLoginStatus(),
+    }
+  })
+
+  onMessage('login', async () => {
+    return {
+      success: await checkLoginStatus(),
+    }
+  })
+
+  onMessage('logout', async () => {
+    await resetLoginStatus()
+  })
+
+  onMessage('get-token', async () => {
+    const { token } = await Browser.storage.local.get('token')
+    return { token }
+  })
+
+  onMessage('set-token', async ({ data: { token } }) => {
+    await Browser.storage.local.set({ token })
+    return { success: true }
+  })
+
+  onMessage('get-all-folders', async () => {
+    const folders = await request('/folders/all', {
+      method: 'GET',
+    })
+    return {
+      folders,
+    }
+  })
+
+  onMessage('create-folder', async ({ data: { name } }) => {
+    try {
+      const folder = await request('/folders/create', {
+        method: 'POST',
+        body: JSON.stringify({ name }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      return folder
+    }
+    catch (e) {
+      return undefined
+    }
+  })
+
+  onMessage('get-all-tags', async () => {
+    const tags = await request('/tags/all', {
+      method: 'GET',
+    })
+    return {
+      tags,
+    }
+  })
+
+  onMessage('add-save-page-task', async ({ data: { tabId, singleFileSetting, pageForm } }) => {
+    createAndRunTask({
+      tabId,
+      singleFileSetting,
+      pageForm,
+    })
+  })
+
+  onMessage('get-page-task-list', async () => {
+    return {
+      taskList: await getTaskList(),
+    }
+  })
+
+  onMessage('clear-finished-task-list', async () => {
+    await clearFinishedTaskList()
+  })
+
+  onMessage('scrape-available', async ({ data: { tabId } }) => {
+    try {
+      await Browser.scripting.executeScript({
+        target: { tabId },
+        func: () => {
+          console.log('web-archive-scrape-available')
+        },
+      })
+      return { available: true }
+    }
+    catch (e) {
+      return { available: false }
+    }
+  })
+
+  onMessage('get-ai-tag-config', async () => {
+    const aiTagConfig = await request('/config/ai_tag', {
+      method: 'GET',
+    })
+    console.log(aiTagConfig)
+    return {
+      aiTagConfig,
+    }
+  })
+
+  onMessage('generate-tag', async ({ data: { title, pageDesc, tagLanguage, preferredTags, model } }) => {
+    const tags = await request('/tags/generate_tag', {
       method: 'POST',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({
+        title,
+        pageDesc,
+        tagLanguage,
+        preferredTags,
+        model,
+      }),
       headers: {
         'Content-Type': 'application/json',
       },
     })
-    return folder
-  }
-  catch (e) {
-    return undefined
-  }
-})
-
-onMessage('get-all-tags', async () => {
-  const tags = await request('/tags/all', {
-    method: 'GET',
+    return {
+      tags,
+    }
   })
-  return {
-    tags,
-  }
-})
 
-onMessage('add-save-page-task', async ({ data: { tabId, singleFileSetting, pageForm } }) => {
-  createAndRunTask({
-    tabId,
-    singleFileSetting,
-    pageForm,
-  })
-})
-
-onMessage('get-page-task-list', async () => {
-  return {
-    taskList: await getTaskList(),
-  }
-})
-
-onMessage('clear-finished-task-list', async () => {
-  await clearFinishedTaskList()
-})
-
-onMessage('scrape-available', async ({ data: { tabId } }) => {
-  try {
-    await Browser.scripting.executeScript({
-      target: { tabId },
-      func: () => {
-        console.log('web-archive-scrape-available')
+  onMessage('query-by-url', async ({ data: { pageUrl } }) => {
+    const pages = await request('/pages/query_by_url', {
+      method: 'POST',
+      body: JSON.stringify({ pageUrl }),
+      headers: {
+        'Content-Type': 'application/json',
       },
     })
-    return { available: true }
-  }
-  catch (e) {
-    return { available: false }
-  }
-})
-
-onMessage('get-ai-tag-config', async () => {
-  const aiTagConfig = await request('/config/ai_tag', {
-    method: 'GET',
+    return {
+      pages,
+    }
   })
-  console.log(aiTagConfig)
-  return {
-    aiTagConfig,
-  }
-})
-
-onMessage('generate-tag', async ({ data: { title, pageDesc, tagLanguage, preferredTags, model } }) => {
-  const tags = await request('/tags/generate_tag', {
-    method: 'POST',
-    body: JSON.stringify({
-      title,
-      pageDesc,
-      tagLanguage,
-      preferredTags,
-      model,
-    }),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-  return {
-    tags,
-  }
-})
-
-onMessage('query-by-url', async ({ data: { pageUrl } }) => {
-  const pages = await request('/pages/query_by_url', {
-    method: 'POST',
-    body: JSON.stringify({ pageUrl }),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-  return {
-    pages,
-  }
-})
+}

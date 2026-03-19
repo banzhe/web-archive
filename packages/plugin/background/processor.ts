@@ -1,6 +1,6 @@
 import { sendMessage } from 'webext-bridge/background'
 import Browser from 'webextension-polyfill'
-import { ensureBackgroundRuntime, request } from './background'
+import { request } from './background'
 import { keepAlive } from './keepAlive'
 import type { SingleFileSetting } from '~/utils/singleFile'
 import { base64ToBlob } from '~/utils/file'
@@ -34,13 +34,22 @@ async function markUnfinishedTasksAsFailed() {
 }
 
 let isInit = false
-Browser.runtime.onConnect.addListener(() => {
-  console.log('connect', isInit)
-  if (!isInit) {
-    isInit = true
-    markUnfinishedTasksAsFailed()
+let isProcessorLifecycleRegistered = false
+
+function registerProcessorLifecycleHandlers() {
+  if (isProcessorLifecycleRegistered) {
+    return
   }
-})
+
+  isProcessorLifecycleRegistered = true
+  Browser.runtime.onConnect.addListener(() => {
+    console.log('connect', isInit)
+    if (!isInit) {
+      isInit = true
+      markUnfinishedTasksAsFailed()
+    }
+  })
+}
 
 async function getTaskList(): Promise<SeriableSingleFileTask[]> {
   const { tasks } = await Browser.storage.local.get('tasks')
@@ -86,7 +95,6 @@ type CreateTaskOptions = {
 }
 
 async function scrapePageData(singleFileSetting: SingleFileSetting, tabId: number) {
-  await ensureBackgroundRuntime()
   await Browser.scripting.executeScript({
     target: { tabId },
     files: ['lib/single-file.js', 'lib/single-file-extension-core.js'],
@@ -169,4 +177,5 @@ export {
   createAndRunTask,
   getTaskList,
   clearFinishedTaskList,
+  registerProcessorLifecycleHandlers,
 }

@@ -1,4 +1,6 @@
-import { ensureBackgroundRuntime } from '~/background/background'
+import '~/lib/browser-polyfill.min.js'
+import '~/lib/single-file-background.js'
+import { registerBackgroundHandlers } from '~/background/background'
 
 export default defineBackground({
   persistent: {
@@ -7,6 +9,6 @@ export default defineBackground({
   },
   type: 'module',
   main() {
-    void ensureBackgroundRuntime()
+    registerBackgroundHandlers()
   },
 })
