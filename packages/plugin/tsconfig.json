@@ -12,6 +12,11 @@
     "baseUrl": "./",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "paths": {
+      "~/*": [
+        "./*"
+      ]
+    },
     "strict": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true
