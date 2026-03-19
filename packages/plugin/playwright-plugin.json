@@ -2,8 +2,10 @@
   "browser": {
     "browserName": "chromium",
     "launchOptions": {
+      "headless": false,
       "args": [
         "--disable-features=DisableLoadExtensionCommandLineSwitch,DisableDisableExtensionsExceptCommandLineSwitch",
+        "--enable-unsafe-extension-debugging",
         "--disable-extensions-except=../../dist/extension",
         "--load-extension=../../dist/extension"
       ]
