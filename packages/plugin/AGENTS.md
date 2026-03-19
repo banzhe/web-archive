@@ -68,3 +68,85 @@ Avoid these mistakes:
 - Treating `webext-bridge` as the place for business error handling.
 - Assuming a message call survives a service worker restart.
 - Expecting features not used in this repository, such as streaming, custom namespace routing, or window messaging.
+
+# playwright-cli Verification Rules
+
+## What it is used for in this plugin
+
+Use `playwright-cli` in this package for local plugin verification and debugging. In this repository, that means starting a browser with the built extension loaded, navigating through the local app, and validating popup, settings, auth, and page-save flows against the local service.
+
+This is a local verification workflow. It is not the repository's main automated test runner, and it should not be documented or treated as `pnpm test`.
+
+## Local development endpoints
+
+Use these local addresses during plugin verification:
+
+- Frontend app URL: `http://localhost:7749`
+- Backend service URL: `http://localhost:9981`
+- The frontend proxies `/api` requests to `http://localhost:9981`
+
+For local plugin testing, prefer `http://localhost:7749` as the plugin `serverUrl`.
+
+That rule matters because this plugin uses the saved `serverUrl` for both behaviors:
+
+- It opens app pages such as `serverUrl` and `serverUrl/#/showcase/folder`.
+- It sends API requests to `${serverUrl}/api/...`.
+
+Do not point local plugin verification at `http://localhost:9981` unless you are intentionally testing a backend-only case and do not need the app routes.
+
+## Required startup flow
+
+Use the repository-managed flow in this order:
+
+1. Start the local backend with `pnpm dev:server`.
+2. Start the local frontend with `pnpm dev:web`.
+3. Build the extension with `pnpm --filter plugin build`.
+4. On first use, install the repository-managed browser with `pnpm --filter plugin run pw:plugin:install-browser`.
+5. Start the verification browser with `pnpm --filter plugin run pw:plugin`.
+
+Do not skip the build step. The Playwright browser config loads the built extension from `dist/extension`, so the extension must exist before the browser is started.
+
+## Browser initialization and interaction rules
+
+Follow this workflow when verifying the plugin:
+
+- Start the browser through `pnpm --filter plugin run pw:plugin`, not through a hand-built `playwright-cli open` command.
+- Open the target local page after the browser session is ready.
+- Take a `snapshot` before interacting with the page.
+- Use the snapshot references before calling `click`, `fill`, `press`, or other interaction commands.
+- After each important action, take another `snapshot` and verify the new UI state, URL, or page title.
+- Use `console`, `network`, or `screenshot` only when the snapshot is not enough to explain a failure.
+- Close the session with `close` when finished.
+
+Do not blindly click elements without checking the current snapshot first.
+
+## Config ownership
+
+Treat the repository files below as the source of truth for this workflow:
+
+- `playwright-plugin.json` is the single source of truth for `playwright-cli` browser settings in this package.
+- `scripts/open-playwright-plugin.ts` is the required entrypoint for launching the verification browser.
+- `scripts/install-playwright-plugin-browser.ts` installs the repository-managed Chrome for Testing used by this workflow.
+
+Do not document or encourage an alternate launch flow that manually recreates these settings on the command line.
+
+If you need to inspect supported forwarded arguments, use:
+
+- `pnpm --filter plugin run pw:plugin -- --help`
+
+## Local auth rule
+
+For local testing, prefer trying `12345678` first.
+
+That value is a recommended local test password, not a built-in system default.
+
+In a fresh local database, the first accepted bearer token becomes the admin token. That means `12345678` can be used as the initial local admin password during local setup and verification.
+
+## Cleanup and safety rules
+
+Follow these rules after verification:
+
+- Use `close` for normal cleanup.
+- If sessions are left behind, use `close-all` or `kill-all`.
+- Do not commit profile directories, storage state files, or captured credentials.
+- Do not hardcode real secrets into commands, persistent profiles, or saved test artifacts.
