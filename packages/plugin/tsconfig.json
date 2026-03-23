@@ -20,5 +20,8 @@
     "strict": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true
-  }
+  },
+  "exclude": [
+    "scripts"
+  ]
 }

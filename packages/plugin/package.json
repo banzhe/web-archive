@@ -13,13 +13,6 @@
     "build": "wxt build",
     "build:firefox": "wxt build -b firefox",
     "postinstall": "wxt prepare",
-    "puppeteer:plugin": "node --experimental-strip-types ./scripts/open-puppeteer-plugin.ts",
-    "puppeteer:verify-popup": "node --experimental-strip-types ./tests/verify-popup-save-page.ts",
-    "puppeteer:verify-popup-save-page": "node --experimental-strip-types ./tests/verify-popup-save-page.ts",
-    "pw:plugin:install-browser": "node --experimental-strip-types ./scripts/install-playwright-plugin-browser.ts",
-    "pw:plugin": "node --experimental-strip-types ./scripts/open-playwright-plugin.ts",
-    "pw:plugin:verify-popup": "node --experimental-strip-types ./scripts/verify-playwright-plugin-popup.ts",
-    "pw:verify-popup": "node --experimental-strip-types ./scripts/verify-popup-with-playwright.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -29,8 +22,6 @@
     "@types/webextension-polyfill": "^0.10.7",
     "@web-archive/shared": "workspace:*",
     "@wxt-dev/module-react": "1.1.5",
-    "playwright": "^1.58.2",
-    "puppeteer-core": "^24.39.0",
     "typescript": "^5.9.3",
     "webext-bridge": "^6.0.1",
     "webextension-polyfill": "^0.12.0",

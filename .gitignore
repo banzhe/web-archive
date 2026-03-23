@@ -45,3 +45,5 @@ docs/.vitepress/dist
 docs/.vitepress/cache
 
 .playwright-cli
+.chrome-devtools-mcp
+.opencode
